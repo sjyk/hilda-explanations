@@ -1,0 +1,50 @@
+\section{Algorithm Description}
+The algorithm follows from our prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}.  The basic idea is a Bayesian framework that is a variant of the popular Expectation-Maximization algorithm, that instead of a Maximization step, computes a gradient instead. This ``Expectation-Gradient'' algorithm allows us to compartmentalize any Tensorflow model.
+
+\vspace{0.5em} \noindent \textbf{Fitting Step: } To construct $\textsf{smodel}(\cdot)$ from $\textsf{model}(\cdot)$, we first start off by fitting the parameters to a simplified probabilistic model. 
+The first step is to run $\textsf{model}(\cdot)$ over the entire training dataset and get feature-prediction $(x, \hat{y})$ tuples.
+We can define $f(\hat{y} \mid x)$ which is the probability of the label $\hat{y}$ given the feature $x$ to represent how $\textsf{model}(\cdot)$ generates predictions. 
+Arbitrary probability distributions are hard to reason about so we consider parametrized distributions $f(\hat{y} \mid x, \theta)$. 
+We want to find $k$ such distributions that best explain all the observations:
+\[
+\{f(\hat{y} \mid x, \theta_1),...,f(\hat{y} \mid x, \theta_k)\}
+\]
+Our results in prior work~\cite{?,Krishnan17} show how this can be optimized with a two-step algorithm:
+\begin{itemize}
+    \item Initialize $\theta_1,...,\theta_k$ randomly.
+    \item Repeat until convergence
+    \item For each data point $i \in \{1,...,N\}$: 
+    \item \begin{itemize} 
+          \item For each component distribution $j \in \{1,...,k\}$:
+          \item $w(i,j) = f(\hat{y}_i \mid x_i, \theta_j)$
+    \end{itemize}
+    \item Gradient Ascent for each $\theta$:
+    \[ \theta_j \leftarrow \theta_j + \lambda \sum_i^N w(i,j) \nabla \log f(\hat{y}_i \mid x_i, \theta_j)  \]
+\end{itemize}
+
+The intuition behind this algorithm is that after random initialization the initial models will have higher accuracy on different data points (by chance). $w(i,j)$ is a soft-assignment--assigning data points to the model that best explains its prediction. Then, $w(i,j)$ becomes a weight to update the models with Gradient Ascent (or descent over the negative log likelihood). This, process repeats until convergence. This is very similar to the K-Means or EM algorithm but instead of updating the cluster centers with a formula, we take a gradient step.
+
+\vspace{0.5em} \noindent \textbf{Distillation Step: } The result of the first step is a set of model parameters $k$ $\theta_1,...,\theta_k$, and a weighting function $w(i,j)$. The next step is to distill $w(i,j)$ into a set of explainable rules that select the one of the $k$ models. We first generate a set of hard assignments for each data point:
+\[
+h(i) = \arg\max_{j} w(i,j)
+\]
+Each $h$ is an indicator $1,...,k$ of the most likely assignment of each data point.
+We can now train a more explainable model to select $h$ as a function of the data.
+This intuition is that this is a simpler model that just selects one of the component models.
+
+The user provides us with a list of features that are considered ``explainable'', and let $x_e$ denote the projection of an example onto this subset of features.
+Then, we can train a Decision Tree over the tuples $(x_e, h)$, which have the desirable property of resembling programatic statements.
+We call this model the meta-model, as it selects between the component models.
+
+Finally, putting everything together, we return something that looks similar to the hard-coded example in the previous section:
+\begin{lstlisting}
+def smodel(x):
+    if amount > 10000:
+        return f_theta1(x)
+    elif a_fault:
+        return f_theta2(x)
+    else:
+        return f_theta3(x)
+\end{lstlisting}
+The surrogate model $\textsf{smodel}(\cdot)$ encapsulates submodels that apply in different parts of the feature-space.
+Suppose, we observe an anomaly, we can now blame a specific model and efficiently get a predicate that selects all of the data the contributed to the model.

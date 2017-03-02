@@ -1,0 +1,191 @@
+\documentclass{sig-alternate}
+
+
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[11pt]{moresize}
+\usepackage{cprotect}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amstext}
+\usepackage{amstext}
+\usepackage{pdfpages}
+\usepackage{alltt}
+\usepackage{epstopdf}
+\usepackage{xspace,colortbl}
+\usepackage[USenglish]{babel}
+\usepackage{multirow}
+\usepackage[hyphens]{url}
+\usepackage{subfigure}
+\usepackage{graphicx}%%
+\usepackage{amssymb}
+\usepackage{fmtcount}
+\usepackage{amsfonts}
+\usepackage{xspace}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage[mathscr]{eucal}
+%\usepackage{psfrag}
+\usepackage{colortbl}
+
+
+\usepackage{bm}
+\usepackage[nospace]{cite}
+\usepackage{csquotes}
+\usepackage{enumitem}
+
+\lstset{basicstyle=\small,breaklines=true,language=Python,belowcaptionskip=.1\baselineskip}
+
+\usepackage{balance}
+
+%\linespread{0.99}
+
+
+
+\begin{document}
+
+\setlength{\belowdisplayskip}{3pt} \setlength{\belowdisplayshortskip}{3pt}
+\setlength{\abovedisplayskip}{3pt} \setlength{\abovedisplayshortskip}{3pt}
+\setlength{\belowcaptionskip}{-10pt}
+\selectfont
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{example}{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{problem}{Problem}
+\newtheorem{property}{Property}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\newcommand{\cond}{\textrm{pred}\xspace}
+\newcommand{\dataset}{data set\xspace}
+\newcommand{\datasets}{data sets\xspace}
+\newcommand{\spview}{\textsf{SPView}\xspace}
+\newcommand{\fjview}{\textsf{FJView}\xspace}
+\newcommand{\aggview}{\textsf{AggView}\xspace}
+\newcommand{\hashfunc}[1]{\textsf{hash}(#1)\xspace}
+\newcommand{\hashop}{\textsf{hash}\xspace}
+\newcommand{\nsc}{\textsf{NormalizedSC}\xspace}
+\newcommand{\rsc}{\textsf{RawSC}\xspace}
+
+\newcommand{\avgfunc}{\ensuremath{\texttt{avg} }\xspace}
+\newcommand{\maxfunc}{\ensuremath{\texttt{max} }\xspace}
+\newcommand{\minfunc}{\ensuremath{\texttt{min} }\xspace}
+\newcommand{\histfunc}{\ensuremath{\texttt{histogram\_numeric} }\xspace}
+\newcommand{\countfunc}{\ensuremath{\texttt{count}}\xspace}
+\newcommand{\sumfunc}{\ensuremath{\texttt{sum} }\xspace}
+\newcommand{\varfunc}{\ensuremath{\texttt{var} }\xspace}
+\newcommand{\stdfunc}{\ensuremath{\texttt{std} }\xspace}
+\newcommand{\covfunc}{\ensuremath{\texttt{cov} }\xspace}
+\newcommand{\corrfunc}{\ensuremath{\texttt{corr} }\xspace}
+\newcommand{\medfunc}{\ensuremath{\texttt{median} }\xspace}
+\newcommand{\percfunc}{\ensuremath{\texttt{percentile} }\xspace}
+\newcommand{\havingfunc}{\ensuremath{\texttt{HAVING} }\xspace}
+\newcommand{\selectfunc}{\ensuremath{\texttt{select} }\xspace}
+\newcommand{\ratio}{\ensuremath{\rho }\xspace}
+
+
+\newcommand{\insertion}{\ensuremath{\texttt{INSERT} }\xspace}
+\newcommand{\update}{\ensuremath{\texttt{UPDATE} }\xspace}
+\newcommand{\delete}{\ensuremath{\texttt{DELETE} }\xspace}
+
+\newcommand{\sysfull}{ActiveClean\xspace}
+\newcommand{\sys}{ActiveClean\xspace}
+\newcommand{\sysnospace}{ActiveClean}
+
+\newcommand{\tbl}[1]{\textsf{#1}\xspace}
+\newcommand{\field}[1]{\textsf{#1}\xspace}
+\newcommand{\cost}{\textrm{cost}\xspace}
+\newcommand{\ans}{\textsf{ans}\xspace}
+\newcommand{\dans}{\Delta\textsf{ans}\xspace}
+\newcommand{\cqp}{correction query processing\xspace}
+\newcommand{\Cqp}{Correction query processing\xspace}
+
+\newcommand{\reminder}[1]{{{\textcolor{magenta}{\{\{\bf #1\}\}}}\xspace}}
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}c@{}}#2\end{tabular}}
+
+\def\ojoin{\setbox0=\hbox{$\bowtie$}%
+  \rule[-.02ex]{.25em}{.4pt}\llap{\rule[\ht0]{.25em}{.4pt}}}
+\def\leftouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie}}
+\def\rightouterjoin{\mathbin{\bowtie\mkern-5.8mu\ojoin}}
+\def\fullouterjoin{\mathbin{\ojoin\mkern-5.8mu\bowtie\mkern-5.8mu\ojoin}}
+
+%\setlength{\belowcaptionskip}{-10pt}
+
+%\newcommand{\reminder}[1] {}
+\pagestyle{plain}
+
+%\input{coverletter.tex}
+
+%\title{ActiveClean: Progressive Data Cleaning For Convex Data Analytics}
+\title{An Intuitive Explanation Might Be Good Enough}
+
+\numberofauthors{1}
+
+\numberofauthors{1}
+\author{ Sanjay Krishnan \\
+\affaddr{ UC Berkeley} \\
+\affaddr{ sanjaykrishnan@berkeley.edu}\\
+%\affaddr{}
+}
+
+%\fontsize{9pt}{11pt}
+%\selectfont
+
+
+\maketitle
+
+\begin{abstract}
+Building and debugging Machine Learning applications remains to be time-consuming and effort-intensive.
+High dimensional models are often opaque so diagnosing problems is difficult.
+We introduce the idea of debugability, which is a measure of how well can we isolate tuples in the training dataset that significantly contributed to an erroneous future prediction.
+We explore whether given a user's model, we can train a surrogate model that approximates the original model, but is more debuggable.
+The key insight is that complex models tend to be hierarchical in nature, where there is a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
+We propose algorithms to infer such structure and argue that it has applications in debugging Machine Learning.
+\end{abstract}
+
+
+\pagenumbering{gobble}
+
+
+\input{introduction.tex}
+\input{framework.tex}
+\input{algorithm.tex}
+\input{interface.tex}
+\input{teaser.tex}
+\input{relatedwork.tex}
+
+%\input{problem_statement.tex}
+%\input{architecture.tex}
+%\input{naive.tex}
+%\input{detector.tex}
+%\input{sampling.tex}
+%\input{estimator.tex}
+%\input{optimal.tex}
+% \input{detect.tex}
+
+% \input{impestimate.tex}
+
+%\input{optimizer.tex}
+%\input{experiments.tex}
+%\input{relatedwork.tex}
+%\input{discussion.tex}
+%\input{conclusion.tex}
+%\input{outlier.tex}
+%\input{analysis.tex}
+%\input{experiments.tex}
+%\input{conclusion.tex}
+
+
+%\bibliographystyle{abbrv}
+%\scriptsize
+\fontsize{8.8pt}{9.9pt} \selectfont
+\bibliographystyle{abbrv}
+\bibliography{ref,explainability} 
+\normalsize \selectfont
+%\appendix
+%\input{appendix.tex}
+
+\end{document}

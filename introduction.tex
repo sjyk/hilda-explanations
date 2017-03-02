@@ -1,0 +1,62 @@
+\section{Introduction}\label{intro}
+The availability of data and vast cloud-based computational resources is allowing both industry and academia to apply Machine Learning in many new domains.
+Learning-based components are increasingly in the critical path of important software systems such as in fraud detection, product recommendation, robotics and control, and machine vision.
+Several breakthroughs in recent years have resulted in improved computational efficiency~\cite{feng2012towards, tensor, recht2011hogwild, crotty2014tupleware} as well as ease of development for learning applications~\cite{hellerstein2012madlib, keystone, kraska2013mlbase}.
+This research has culminated in the development of several open-source toolkits with highly efficient distributed optimization libraries, e.g., TensorFlow, MLlib, and CAFFE, or in other words--training a statistical model has never been easier.
+
+However, surveys of data scientists, the ones who have ostensibly benefited the most from these breakthroughs, paint a very different picture~\cite{kandel2012, krishnan2016hilda}.
+Building and debugging data-driven applications remains to be time-consuming and effort-intensive~\cite{sculley2014machine}.
+When a prediction is unexpected, it is unclear if this is due to a data error (i.e., an inconsistent value representation), a model error (i.e., the model class cannot represent such a relationship), or an approximation error (i.e., such examples were not encountered in sufficient number during training).
+When models are opaque, diagnosing such problems is difficult, so \emph{interpretability} is often touted as a solution \cite{?}.
+
+But, interpretability means different things to different people. To an end-user, this means explain why I received a given prediction in terms of understandable features. However, an ML developer cares less about understandable features than an explanation of the occurrence of an anomaly in terms of data that the model previously saw. Even if this explanation is course-grained, it is still useful as the data scientist can use this to trigger further exploratory data analysis to understand the underlying patterns. So perhaps, the models for interpretability being studied in the ML community are more complex than what we need for ML debugging.
+
+Instead, we propose the admittedly imprecise notion of \emph{debugability}.
+Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.
+Suppose, M sees a new example $x'$ and predicts $y'$ causing a \emph{prediction anomaly} (i.e., incorrect prediction or unsafe output).
+Debugability is a measure of how well can we isolate tuples in the training dataset that significantly contributed to the prediction $y'$.
+
+Using this working definition, we can actually design algorithms that take in a black-box model and return a more debugable approximation.
+The key insight is that complex models tend to be hierarchical in nature.
+One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
+In prior work, we have developed algorithms that can take a set of predictions from a model and infer a likely hierarchical structure~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}.
+The basic idea is an iterative clustering algorithm that first initializes $k$ models, then assigns tuples to the model that best predicts it, then updates the $k$ models and repeats.
+Once the k models are trained, we can then learn a meta-model to switch between them.
+When a new example for prediction comes in, the meta-model first picks a sub-model, then the sub-model issues a prediction.
+Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
+
+This paper presents a special case of this framework aimed at improving debugging in large-scale ML settings. 
+In particular, we allow the $k$ sub-models to be as expressive and complex as the user desires, but constrain the meta-model to be a decision tree.
+This means that if a particular new example $x'$ creates an anomalous output, we can immediately blame a particular sub-model.
+Furthermore, the decision tree allows us to quickly determine a predicate to select the subset of training data that contributed to the sub-model.
+By varying $k$ and the depth of the decision tree, the user can tradeoff fidelity to the original model and the granularity of such explanations.
+
+
+Our main justification is that modern ML models are necessarily complex, i.e., they often map complex data structures such as images or documents to decisions. Trying to explain every model in terms of its features, is not a tractable solution with current algorithms. Instead, if we can merely explain the high-level structure of a model (while the sub-models are still opaque), this might be enough of a signal for a data scientist to debug. As an analogy, a high-school physics teacher has to simplify the calculus in his lesson, but leaves enough detail for interested students to learn more on their own.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
