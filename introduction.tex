@@ -32,6 +32,8 @@ Thus, in contrast to tradiitional machine learning debugging, which seeks to ide
 \ewu{Provide intuition on why the decision tree + models is a good idea.}
 Intuitively, a subset of the training data is useful for debugging a mispredicted test point if a model built on that subset of data is \ewu{XXX}.  Subsets of training data are most easily explained as rules (predicates).  Given this intuition, our goal is to construct a {\it surrogate} model that parititons the training dataset by axis -align splits (decision tree) and fits a high quality model to each parititon in such a way that both approximates the DNN model and \ewu{XXX}
 
+\ewu{At this point, I think things are set up to actually introduce the notion of debuggability}
+
 Instead, we propose the admittedly imprecise notion of \emph{debugability}.
 Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.
 Suppose, M sees a new example $x'$ and predicts $y'$ causing a \emph{prediction anomaly} (i.e., incorrect prediction or unsafe output).
