@@ -29,6 +29,9 @@ Thus, in contrast to tradiitional machine learning debugging, which seeks to ide
 \gray{But, interpretability means different things to different people. To an end-user, this means explain why I received a given prediction in terms of understandable features. However, an ML developer cares less about understandable features than an explanation of the occurrence of an anomaly in terms of data that the model previously saw. Even if this explanation is course-grained, it is still useful as the data scientist can use this to trigger further exploratory data analysis to understand the underlying patterns. So perhaps, the models for interpretability being studied in the ML community are more complex than what we need for ML debugging.
 }
 
+\ewu{Provide intuition on why the decision tree + models is a good idea.}
+Intuitively, a subset of the training data is useful for debugging a mispredicted test point if a model built on that subset of data is \ewu{XXX}.  Subsets of training data are most easily explained as rules (predicates).  Given this intuition, our goal is to construct a {\it surrogate} model that parititons the training dataset by axis -align splits (decision tree) and fits a high quality model to each parititon in such a way that both approximates the DNN model and \ewu{XXX}
+
 Instead, we propose the admittedly imprecise notion of \emph{debugability}.
 Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.
 Suppose, M sees a new example $x'$ and predicts $y'$ causing a \emph{prediction anomaly} (i.e., incorrect prediction or unsafe output).
