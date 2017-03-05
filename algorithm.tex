@@ -1,4 +1,8 @@
 \section{Algorithm Description}
+\ewu{I get the feeling you just copy and paste the same algorithm between all the papers..}
+
+\ewu{Seriously, section should start off by explaining how the algorithm is designed to benefit HILDA -- is it fast enough? or computed offline?  or?}
+
 The algorithm follows from our prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}.  The basic idea is a Bayesian framework that is a variant of the popular Expectation-Maximization algorithm, that instead of a Maximization step, computes a gradient instead. This ``Expectation-Gradient'' algorithm allows us to compartmentalize any Tensorflow model.
 
 \vspace{0.5em} \noindent \textbf{Fitting Step: } To construct $\textsf{smodel}(\cdot)$ from $\textsf{model}(\cdot)$, we first start off by fitting the parameters to a simplified probabilistic model. 
