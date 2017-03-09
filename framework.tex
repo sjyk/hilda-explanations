@@ -34,19 +34,19 @@ Existing approaches:
 \begin{itemize}
 \item \emph{(S1) Nearest Neighbors. } The data scientist can search for the k nearest neighbors in the training dataset and use those as a guide.
 
-\item \emph{(S2) Use A Simpler Model.} The data scientist can use any number of techniques to use the interpretable model from the start\cite{?}, then apply her domain expertise to understand why an error occurred.
+\item \emph{(S2) Use A Simpler Model.} The data scientist can use any number of techniques to use the interpretable model from the start, then apply her domain expertise to understand why an error occurred.
 \end{itemize}
 
-The problem with (S1) and (S2) is that the models that are needed for such decision problems are necessarily complex. In the running example, there is a textual field \textsf{description}, which might be a very valuable feature for predicting fraud. Processing such data may require several NLP steps like a word-embedding, stop word removal, bi-gram featurization etc. So by design the feature space is complex and may not be interpretable by anyone other than an expert, and using a simpler model may not achieve the desired accuracy. Furthermore, as we move to a world where highly deep expressive models, which in principle can learn any deterministic function, it is well-known that these models have adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction) \cite{?}. This makes approaches like a nearest neighbor approach unreliable or even misleading. The approach that we propose identifies records that the classifier treats as similar, not just similarity in the feature space.
+The problem with (S1) and (S2) is that the models that are needed for such decision problems are necessarily complex. In the running example, there is a textual field \textsf{description}, which might be a very valuable feature for predicting fraud. Processing such data may require several NLP steps like a word-embedding, stop word removal, bi-gram featurization etc. So by design the feature space is complex and may not be interpretable by anyone other than an expert, and using a simpler model may not achieve the desired accuracy. Furthermore, as we move to a world where highly deep expressive models, which in principle can learn any deterministic function, it is well-known that these models have adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction) \cite{szegedy2013intriguing}. This makes approaches like a nearest neighbor approach unreliable or even misleading. The approach that we propose identifies records that the classifier treats as similar, not just similarity in the feature space.
 
 \subsection{Towards Debuggable Surrogates}
 Let us consider the following working definition.
-Debugability is a measure of how well can we isolate tuples in the training dataset that significantly contributed to the prediction $ \hat{y}_{new}$.
+Debuggability is a measure of how well can we isolate tuples in the training dataset that significantly contributed to the prediction $ \hat{y}_{new}$.
 We explore whether we given $\textsf{model}(\cdot)$ can train a surrogate model $\textsf{smodel}(\cdot)$ that approximates the original model, but is more debuggable.
-Complex models tend to be hierarchical in nature~\cite{?}.
 One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
 
-This meta-model can often be much simpler.
+This is a piecewise approximation of a complex function and by changing the allowed class models for the submodels and metamodel, we can get different behavior. 
+As an illustrative example, consider when the meta model is much simpler.
 For example, imagine if we hard-coded the following logic:
 \begin{lstlisting}
 def smodel(x):
@@ -64,14 +64,17 @@ Even though the logic that switches between the the submodels is simple (in fact
 But, if we were to observe an anomaly, we would be able to precisely blame one of the submodels; thereby, getting a coarse predicate to select tuples that are assinged to that model.
 there is an inherent tradeoff here where increasing the complexity of the meta-model improves the granularity of debugging, but potentially sacrifices on fidelity to the original model.
 
-\vspace{0.25em} \noindent \textbf{Learning Meta Models: } We propose an algorithm to automatically learn a meta-model and submodels from data to approximate the user's desired model. This algorithm is a special case of the algorithm, we proposed in prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}. At a high-level, the algorithm takes the dataset $D$ and the model \textsf{model} as input, and returns $\textsf{smodel}$, which consists of a decision-tree meta model that selects from a collection of $k$ submodels. Given a new record, the user can evaluate both:
+\subsection{Learning Meta Models} 
+We propose an algorithm to automatically learn a meta-model and submodels from data to approximate the user's desired model.
+This algorithm can run offline during the training phase and is generally no-more than a constant factor more expensive than standard model training
+This algorithm is a special case of the algorithm, we proposed in prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, krishnan17}. At a high-level, the algorithm takes the dataset $D$ and the model \textsf{model} as input, and returns $\textsf{smodel}$, which consists of a decision-tree meta model that selects from a collection of $k$ submodels. Given a new record, the user can evaluate both:
 \[
 \hat{y}_{new} = \textsf{model}(x_{new})
 \]
 \[
 \hat{y}_{new} = \textsf{smodel}(x_{new}) \approx \textsf{model}(x_{new})
 \]
-and use the structure of \textsf{smodel} to debug with knowledge that it approximates $\textsf{model}$. A natural measure of confidence in the approximation is whether the predictions from the two models align.
+and use the structure of \textsf{smodel} to debug with knowledge that it approximates $\textsf{model}$.
 
 \subsection{API and System}
 We implemented this as a system in Python initially focusing on TensorFlow models.

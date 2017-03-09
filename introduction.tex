@@ -1,61 +1,55 @@
 \section{Introduction}\label{intro}
-
-\ewu{This paragraph is misleading.  Cut it down to one sentence, combine with next paragraph.}
-Systems and algoirthms for training models are so fast that it is no longer the bottleneck in the process of deploying machine learning models.
-In particular, building models is not one-shot and requires iterating between model/feature design, analyzing the results, and repeat (the HILDA loop, cite last year's hilda paper).
-\gray{The availability of data and vast cloud-based computational resources is allowing both industry and academia to apply Machine Learning in many new domains.
-Learning-based components are increasingly in the critical path of important software systems such as in fraud detection, product recommendation, robotics and control, and machine vision.  Several breakthroughs in recent years have resulted in improved computational efficiency~\cite{feng2012towards, tensor, recht2011hogwild, crotty2014tupleware} as well as ease of development for learning applications~\cite{hellerstein2012madlib, keystone, kraska2013mlbase}.  This research has culminated in the development of several open-source toolkits with highly efficient distributed optimization libraries, e.g., TensorFlow, MLlib, and CAFFE, or in other words--training a statistical model has never been easier.}
-
-However, surveys of data scientists, the ones who have ostensibly benefited the most from these breakthroughs, paint a very different picture~\cite{kandel2012, krishnan2016hilda}.
-Building and debugging data-driven applications remains to be time-consuming and effort-intensive~\cite{sculley2014machine}.
-When a prediction is unexpected, it is unclear if this is due to a data error (i.e., an inconsistent value representation), a model error (i.e., the model class cannot represent such a relationship), or an approximation error (i.e., such examples were not encountered in sufficient number during training).
-When models are opaque, diagnosing such problems is difficult, so \emph{interpretability} is often touted as a solution \cite{?}.
+Developing machine learning-based applications is rarely a one-shot process requiring data pre-processing, iterating between model/feature design, analyzing the results, and evaluating the new model~\cite{sculley2014machine, krishnan2016hilda}.
+While the community has made substantial progress in scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, there are few tools to assist developers iterate, diagnose, and debug learning applications.
 
 
-As deeper models (DNNs) become more popular than ever, it is increasingly difficult to know what the model is learning and why the model mispredicts.
-Specifically, when a prediction is unexpected, it is unclear if this is due to errors values in the training data that led to a poor model prediction, using a model  that cannot represent the patterns in the training data (e.g., need more layers?),  or an approximation error due to data simply not present in the training data.
-For instance, consider designing prediction models for self driving cars.  
+As deeper models (DNNs) become more popular, it is increasingly difficult to know what the model is learning and why the model mispredicts.
+It can be unclear if a misprediction is due to inconsistencies in the training data, the model cannot represent the patterns in the data  (e.g., need more layers?), or since similar examples were simply not present in the training data.
+For instance, consider designing prediction models for self-driving cars.  
 Poor lighting conditions, street obstacles, and other issues could lead to highly noisy training data.
-Furthermore, it is unlikely that the training data has collected data for every possible driving condition (e.g., during a once in five years storm~\cite{bayareastormin2017})
+Furthermore, it is unlikely that the training data has collected data for every possible driving condition (e.g., during a once in five years storm).
+For data scientists to effective design and debug learning applications, they need to be able to understand why a model made a certain prediction.
 
-In the context of DNNs, the architecture matters, however the primary source for prediction quality is a large corpus of representative training data.  
-Thus, in contrast to tradiitional machine learning debugging, which seeks to idenitfy human-understandable features that most affected a given model prediction, it is more valuable to identify subsets of the training data that can help {\it explain} what most likely affected a given prediction.
-\ewu{Describe why this problem is so hard that even coarse grained explanations are valuable.}
-\ewu{Describe how, if your technique does work, it actually facilitates HILDA}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.35\columnwidth]{figures/teaser1.png}
+    \hspace{2em}
+    \includegraphics[width=0.35\columnwidth]{figures/teaser2.png}
+    \caption{(Left) ML developers need to understand the relationship between training data and a model's predictions, i.e., how are similar points predicted in the training data. But effectively determining the size and range of this neighborhood is challenging in expressive models which can have very complex geometry. (Right) We propose an approximation technique that can represent a black-box model in terms of sub-models applied to feature-space partitions. The developer can quickly determine which data are related based on these partitions.}
+    \label{fig:my_label}
+\end{figure}
 
+Two contrasting approaches have been pursued by the ML community: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. This problem is extremely challenging.
+Using a simpler model is often out of the question as modern ML models are complex for good reason---they map very high-dimensional images or documents to decisions.
+In terms of explanations, one highly promising approach is to locally linearize a model in a small neighborhood to explain its behavior\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
+These approximations are highly effective for an end-user as they can explain a prediction in terms of features of the input data (e.g., linear weights), but are these approximations also useful for debugging?
+However, these approximations only explain how a model predicts based on features, not what data led the model to predict in that way in the first place.
+We argue that the ML developers are concerned about what training data most influenced a prediction (i.e., if that data were not present in the training set would the prediction still have been wrong), as this allows them to differentiate between modeling errors and data errors.
 
+Intuitively, the developer would like to isolate a subset of the training data that most explain misprediction or an anomaly. However, for most ML models, every training data point has some impact on the final result.
+Therefore, we propose a different type of approximation to explain a complex ML model, namely, a hierarchical approximation that decomposes a model into sub-models that apply to certain parts of the feature-space.
+One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
+We call allow the sub-models to be as expressive as needed to represent the patterns in the data, but constrain the meta-model to be a decision tree.
+This enforces that while the low-level details of how the model makes predictions are effectively black-boxes, the high-level details about partitions of relevant data are highly interpretable.
+This provides a different type of approximation than what is classically used in model interpretability research, where rather than returning a function of features in a neighborbood of a data point, it returns the most informative neighborhood.
 
-\ewu{I didn't believe this argument because it offers an arbitrary proposal.  Stole some of its ideas though.}
-\gray{But, interpretability means different things to different people. To an end-user, this means explain why I received a given prediction in terms of understandable features. However, an ML developer cares less about understandable features than an explanation of the occurrence of an anomaly in terms of data that the model previously saw. Even if this explanation is course-grained, it is still useful as the data scientist can use this to trigger further exploratory data analysis to understand the underlying patterns. So perhaps, the models for interpretability being studied in the ML community are more complex than what we need for ML debugging.
-}
+This means that if a particular new example $x'$ creates an anomalous output, we can immediately blame a particular sub-model.
+Furthermore, the decision tree allows us to quickly determine a predicate to select the subset of training data that contributed to the sub-model.
+By varying $k$ and the depth of the decision tree, the user can tradeoff fidelity to the original model and the granularity of such explanations.
+By design, this method is meant to be high recall and low precision---assuming that further heuristics will help the user identify specific problematic data.
 
-\ewu{Provide intuition on why the decision tree + models is a good idea.}
-Intuitively, a subset of the training data is useful for debugging a mispredicted test point if a model built on that subset of data is \ewu{XXX}.  Subsets of training data are most easily explained as rules (predicates).  Given this intuition, our goal is to construct a {\it surrogate} model that parititons the training dataset by axis -align splits (decision tree) and fits a high quality model to each parititon in such a way that both approximates the DNN model and \ewu{XXX}
-
-\ewu{At this point, I think things are set up to actually introduce the notion of debuggability}
-
-Instead, we propose the admittedly imprecise notion of \emph{debugability}.
+This leads to our formalization of \emph{debuggability}.
 Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.
 Suppose, M sees a new example $x'$ and predicts $y'$ causing a \emph{prediction anomaly} (i.e., incorrect prediction or unsafe output).
 Debugability is a measure of how well can we isolate tuples in the training dataset that significantly contributed to the prediction $y'$.
-
 Using this working definition, we can actually design algorithms that take in a black-box model and return a more debugable approximation.
-The key insight is that complex models tend to be hierarchical in nature.
-One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
 In prior work, we have developed algorithms that can take a set of predictions from a model and infer a likely hierarchical structure~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}.
 The basic idea is an iterative clustering algorithm that first initializes $k$ models, then assigns tuples to the model that best predicts it, then updates the $k$ models and repeats.
 Once the k models are trained, we can then learn a meta-model to switch between them.
 When a new example for prediction comes in, the meta-model first picks a sub-model, then the sub-model issues a prediction.
 Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
 
-This paper presents a special case of this framework aimed at improving debugging in large-scale ML settings. 
-In particular, we allow the $k$ sub-models to be as expressive and complex as the user desires, but constrain the meta-model to be a decision tree.
-This means that if a particular new example $x'$ creates an anomalous output, we can immediately blame a particular sub-model.
-Furthermore, the decision tree allows us to quickly determine a predicate to select the subset of training data that contributed to the sub-model.
-By varying $k$ and the depth of the decision tree, the user can tradeoff fidelity to the original model and the granularity of such explanations.
 
-
-Our main justification is that modern ML models are necessarily complex, i.e., they often map complex data structures such as images or documents to decisions. Trying to explain every model in terms of its features, is not a tractable solution with current algorithms. Instead, if we can merely explain the high-level structure of a model (while the sub-models are still opaque), this might be enough of a signal for a data scientist to debug. As an analogy, a high-school physics teacher has to simplify the calculus in his lesson, but leaves enough detail for interested students to learn more on their own.
 
 
 

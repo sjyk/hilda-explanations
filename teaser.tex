@@ -1,5 +1,5 @@
 
-\begin{figure*}
+\begin{figure*}[ht]
     \centering
     \includegraphics[width=\textwidth]{figures/result1.png}
     \caption{(A) Illustrates how well a debuggable surrogate model can approximate a complex model, (B) illustrates how well this surrogate model can isolate mispredictions in terms of precision and recall, and (C) why alternative approaches do not work.}
@@ -7,7 +7,6 @@
 \end{figure*}
 
 \section{Highlighted Results}
-Our full paper on the algorithm contains a larger selection of results on modularization in more complex Deep Reinforcement learning tasks~\cite{Krishnan17}.
 We present an illustrative example in this paper to describe its applications to supervised learning.
 We have a dataset of movie descriptions IMDB~\footnote{ \url{ftp://ftp.fu-berlin.de/pub/misc/movies/database/}} and Yahoo~\footnote{ \url{http://webscope.sandbox.yahoo.com/catalog.php?datatype=r}}.
 Each movie has a title, a short 1-2 paragraph plot description, year, rating, language, and a list of categories, and the goal is to train a model to predict whether a movie is a ``Horror'' or ``Comedy'' from the description and title.  
