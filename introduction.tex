@@ -34,12 +34,11 @@ In addition, identifying training data can help developers differentiate between
 % We argue that the ML developers are concerned about what training data most influenced a prediction (i.e., if that data were not present in the training set would the prediction still have been wrong), as this allows them to differentiate between modeling errors and data errors.
 
 
-To this end, our goal is to help the user identify a {\it sub-partition} of the training data that likely influenced the model's misprediction.    
-
 Intuitively, the developer would like to isolate a subset of the training data that helps explain a misprediction. 
 However, for most models, every training data point has some impact on the final result.
 Thus, we simplify the problem to instead identify a {\it sub-partition} of the training data locally approximates the complex model for test points within this sub-partition.  
-To this end, we represent a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model partitions the training data, and a set of sub-models that approximate the patterns within each partition.
+
+To this end, we represent \sys,  a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model partitions the training data, and a set of sub-models that approximate the patterns within each partition.
 These sub-models can be arbitrarily complex in order to capture local patterns, however the meta-model is constrained to be a decision tree.
 This formulation ensures that sub-models are accurate, while the partitions are interpretable as rules.
 In contrast to existing model interpretation techniques that return locally relevant features, our approach returns the most informative neighborhood (partition).
@@ -48,7 +47,7 @@ Applying the trained surrogate model is very simple---if a test point is mispred
 As our experiments show, the developer can tune the total number of sub-models and the depth of the decision tree in order to control the trade-off between the specificity of the partitions and how similar the surrogate model is to the complex model.
 By identifying an entire partition, this approach will naturally identify the training points that likely led to the misprediction, as well as other training points that were irrelevant.   However, we assume that filtering the training data, which can often contain millions or trillions of data points, into a concise starting point for the developer to further explore the training data and more quickly identiy the problematic training data.
 
-The rest of this short paper describes the problem formulation for surrogate models that are designed to assist model debugging, an algorithm sketch for training surrogate models, as well as an interface that illustrates how these models can be integrated in a visual model building interface.
+The rest of this short paper describes the \sys problem formulation, an algorithm sketch for training surrogate models, as well as an illustration of how \sys can be integrated in a visual model building interface.
 \ewu{NEED EXPERIMENT SUMMARY}
 %We have applied our approach to control problems and find that it can improve 
 %Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
