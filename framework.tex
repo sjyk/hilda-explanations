@@ -1,22 +1,26 @@
 \section{Framework and API}
-The developer has a training dataset $D$ that consists of tuples of features $x_i$ and labels $y_i$ (either categorical or real-valued). She applies some function to this dataset $\textsf{train}(D)$, and returns a model $\textsf{model}(\cdot)$. Given a new $x_{new}$ this model returns a prediction $\hat{y}_{new}$:
+This section describes how we model machine learning prediction and the \sys problem.
+Let the training dataset $D$ contain tuples of features $x_i$ and labels $y_i$ that are categorical or real-valued.
+\texttt{train(D)} is a training algorithm that returns a model \texttt{model($\cdot$)} that takes as input a test point $x_{new}$ and predicts a label $\hat{y}_{new}$:
 \[
 \hat{y}_{new} = \textsf{model}(x_{new})
 \]
 
 \vspace{0.5em}\noindent \textbf{Example Insurance Fraud Detection: } Consider the following running example of car insurance fraud detection. The training dataset $D$ has the following schema:
 \[
-\texttt{D(model, amount, at\_fault, description, fraud?)}
+\texttt{D(make, amount, at\_fault, descr, fraud?)}
 \]
-where \texttt{model} is a categorical attribute describing the model of the car, \texttt{amount} is a double-valued amount that the person is claiming, \texttt{at\_fault} is a boolean variable describing whether the claimant is at fault, \texttt{description} is a string-valued attribute describing the nature of the claim, and \texttt{fraud?} is the yes/no label if the claim is fraudulent.
+where \texttt{make} is a categorical attribute describing the make of the car, \texttt{amount} is a double-valued amount that the person is claiming, \texttt{at\_fault} is a boolean variable describing whether the claimant is at fault, \texttt{descr} is a string-valued attribute describing the nature of the claim, and \texttt{fraud?} is the yes/no label if the claim is fraudulent.
 
-The function $\textsf{model}(\cdot)$ takes in a new unlabeled tuple:
+We can think of a test point as a tuple that is missing a \texttt{label} attribute: 
+$$x_{new} = \texttt{(make, amount, at\_fault, descr, \_)}$$
+The model fills in the \texttt{label} attribute:
 \[
-x_{new} = \texttt{r(model, amount, at\_fault, description, \_)}
+  \texttt{model(}x_{new}\texttt{)} \rightarrow \texttt{(make, amount, at\_fault, descr,} \hat{y}_{new} )
 \]
-and predicts:
+A misprediction is a violation of a constraint that the predicted label is equal to the true label $y^*_{new}$:
 \[
-\texttt{r(model, amount, at\_fault, description,} \hat{y}_{new} )
+  \texttt{model(}x_{new}\texttt{).label = } y^*_{new}
 \]
 
 \subsection{Challenges in Debugging}
@@ -37,15 +41,15 @@ Existing approaches:
 \item \emph{(S2) Use A Simpler Model.} The data scientist can use any number of techniques to use the interpretable model from the start, then apply her domain expertise to understand why an error occurred.
 \end{itemize}
 
-The problem with (S1) and (S2) is that the models that are needed for such decision problems are necessarily complex. In the running example, there is a textual field \textsf{description}, which might be a very valuable feature for predicting fraud. Processing such data may require several NLP steps like a word-embedding, stop word removal, bi-gram featurization etc. So by design the feature space is complex and may not be interpretable by anyone other than an expert, and using a simpler model may not achieve the desired accuracy. Furthermore, as we move to a world where highly deep expressive models, which in principle can learn any deterministic function, it is well-known that these models have adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction) \cite{szegedy2013intriguing}. This makes approaches like a nearest neighbor approach unreliable or even misleading. The approach that we propose identifies records that the classifier treats as similar, not just similarity in the feature space.
+The problem with (S1) and (S2) is that the prediction problem necessarily needs complex models. In the running example, there is a textual field \textsf{descr}, which might be a very valuable feature for predicting fraud. Processing such data typically requires translating the data into a higher-dimensional feature space by using NLP methods such as word-embeddings, stop word removal, bi-gram featurization, etc.  By design, this feature space may not be interpretable by anyone other than a language expert, and using a simpler model may not achieve the desired accuracy. Furthermore, highly expressive deep models such as deep neural networks, which in principle can learn any deterministic function, are susceptible to adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction)\cite{szegedy2013intriguing}. This means that relying on neighboring points can be unreliable or even misleading because they may inadvertantly be adversarial.  The approach that we propose identifies records that the {\it classifier} considers similar, rather than naive similarity in the feature space.
 
-\subsection{Towards Debuggable Surrogates}
-Let us consider the following working definition.
-Debuggability is a measure of how well can we isolate tuples in the training dataset that significantly contributed to the prediction $ \hat{y}_{new}$.
-We explore whether we given $\textsf{model}(\cdot)$ can train a surrogate model $\textsf{smodel}(\cdot)$ that approximates the original model, but is more debuggable.
-One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
+\subsection{Debugging with \sys}
+Our goal is to isolate points in the training data that significantly contributed to a anomalous prediction $\hat{y}_{new}$.
+Given a model $\textsf{model}(\cdot)$, we want to train a surrogate \sys model $\textsf{smodel}(\cdot)$ that approximates the original model, but can help the developer identify such points.
+The structure of a \sys model is a meta-model that partitions the training data, and a local sub-model for each partition that is {\it Partition Aware}.
+\sys models can be viewed as a generalization of piecewise linear models to higher dimensional spaces, and for arbitrary non-linear models.     
+In this paper, we focus on decision trees for the meta-model, and the same model class as \texttt{model} for the sub-models, however, it may be possible to exhibit different accuracy and explanatory behaviors by varying the class of models we use for the meta-model and sub-models.
 
-This is a piecewise approximation of a complex function and by changing the allowed class models for the submodels and metamodel, we can get different behavior. 
 As an illustrative example, consider when the meta model is much simpler.
 For example, imagine if we hard-coded the following logic:
 \begin{lstlisting}
@@ -60,9 +64,9 @@ def smodel(x):
     #a default model
         return submodel_3(x)
 \end{lstlisting}
-Even though the logic that switches between the the submodels is simple (in fact it is a decision tree), the actual behavior is complex since the submodels encapsulate the complexity.
-But, if we were to observe an anomaly, we would be able to precisely blame one of the submodels; thereby, getting a coarse predicate to select tuples that are assinged to that model.
-there is an inherent tradeoff here where increasing the complexity of the meta-model improves the granularity of debugging, but potentially sacrifices on fidelity to the original model.
+Even though meta model is simple (in fact it is a decision tree), the full model \texttt{smodel} can still model complex patterns due to the complex sub-models.  Thus, we do not sacrafice model accuracy in the same way as simpler model approximations.
+But, if we observe an anomaly, the meta-model can precisely blame one of the submodels; thereby, providing a coarse predicate to select tuples that are assigned to that model.
+There is an inherent tradeoff, a meta-model that contains a single partition \texttt{true} can create a sub-model that is nearly identical to the original complex model, however the partition is not useful to the developer.  In contrast, increasing the complexity of the meta-model makes each partition smaller, but the resulting model potentially diverges from the orginal model.  At the limit, the meta-model may simply build a decision tree over the training data, and each partition contains nearly identical points.
 
 \subsection{Learning Meta Models} 
 We propose an algorithm to automatically learn a meta-model and submodels from data to approximate the user's desired model.
