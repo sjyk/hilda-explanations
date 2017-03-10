@@ -1,14 +1,17 @@
 \section{Introduction}\label{intro}
-Developing machine learning-based applications is rarely a one-shot process requiring data pre-processing, iterating between model/feature design, analyzing the results, and evaluating the new model~\cite{sculley2014machine, krishnan2016hilda}.
-While the community has made substantial progress in scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, there are few tools to assist developers iterate, diagnose, and debug learning applications.
+Developing machine learning-based applications is fundamentally iterative---developers must iterate between designing the model, engineering features, cleaning data, analyzing test results, and debugging errors when the model performs poorly~\cite{sculley2014machine, krishnan2016hilda}.
+While the community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, developers are still stuck interpreting test results and trying to understand why a model performs poorly.  This lack of debugging tools is a key bottleneck towards rapid model development.
 
 
-As deeper models (DNNs) become more popular, it is increasingly difficult to know what the model is learning and why the model mispredicts.
-It can be unclear if a misprediction is due to inconsistencies in the training data, the model cannot represent the patterns in the data  (e.g., need more layers?), or since similar examples were simply not present in the training data.
-For instance, consider designing prediction models for self-driving cars.  
-Poor lighting conditions, street obstacles, and other issues could lead to highly noisy training data.
+Debugging machine learning models is challenging because it is often unclear whether a misprediction is due to 
+inconsistencies or errors in the training data, 
+limitations of the model or features so that it cannot model the salient patterns in the training data,
+or simply because there are not enough training examples for a particular prediction. 
+In contrast to more transparent models such as decision trees or linear classifiers, debugging has become particularly challenging with the widespread popularity of opaque models such as deep neural networks.
+Consider designing prediction models for self-driving cars.
+The training data is highly noisy due to poor lighting conditions, street obstacles, and other sensor and environmental issues.
 Furthermore, it is unlikely that the training data has collected data for every possible driving condition (e.g., during a once in five years storm).
-For data scientists to effective design and debug learning applications, they need to be able to understand why a model made a certain prediction.
+Developers must be able to understand why a model made a certain (mis)prediction in order to effectively design and debug their machine learning applications.
 
 \begin{figure}
     \centering
@@ -19,24 +22,33 @@ For data scientists to effective design and debug learning applications, they ne
     \label{fig:my_label}
 \end{figure}
 
-Two contrasting approaches have been pursued by the ML community: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. This problem is extremely challenging.
-Using a simpler model is often out of the question as modern ML models are complex for good reason---they map very high-dimensional images or documents to decisions.
-In terms of explanations, one highly promising approach is to locally linearize a model in a small neighborhood to explain its behavior\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
-These approximations are highly effective for an end-user as they can explain a prediction in terms of features of the input data (e.g., linear weights), but are these approximations also useful for debugging?
-However, these approximations only explain how a model predicts based on features, not what data led the model to predict in that way in the first place.
-We argue that the ML developers are concerned about what training data most influenced a prediction (i.e., if that data were not present in the training set would the prediction still have been wrong), as this allows them to differentiate between modeling errors and data errors.
+This problem is extremely challenging and the ML community has pursued two primary approaches: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. Neither approach is perfect. 
+Using a simpler model sacrifices prediction accuracy, which is a trade-off that many model applications are not willing to make.
+An example of the second approach is to train a sparse linear model in the local neighborhood of a mispredicted point as a proxy to explain the characteristics (features) that caused the misprediction\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
+Although these approximations can identify salient features, they do not help identify the {\it training data} that led the model towards the misprediction.
+Identifying this training data is increasingly important when debugging deep neural network models due to their heavy reliance on training data rather than feature engineering.
+In addition, identifying training data can help developers differentiate between errors due to the model and errors due to training data.
 
-Intuitively, the developer would like to isolate a subset of the training data that most explain misprediction or an anomaly. However, for most ML models, every training data point has some impact on the final result.
-Therefore, we propose a different type of approximation to explain a complex ML model, namely, a hierarchical approximation that decomposes a model into sub-models that apply to certain parts of the feature-space.
-One can think of a complex model as a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
-We call allow the sub-models to be as expressive as needed to represent the patterns in the data, but constrain the meta-model to be a decision tree.
-This enforces that while the low-level details of how the model makes predictions are effectively black-boxes, the high-level details about partitions of relevant data are highly interpretable.
-This provides a different type of approximation than what is classically used in model interpretability research, where rather than returning a function of features in a neighborbood of a data point, it returns the most informative neighborhood.
 
-This means that if a particular new example $x'$ creates an anomalous output, we can immediately blame a particular sub-model.
-Furthermore, the decision tree allows us to quickly determine a predicate to select the subset of training data that contributed to the sub-model.
-By varying $k$ and the depth of the decision tree, the user can tradeoff fidelity to the original model and the granularity of such explanations.
-By design, this method is meant to be high recall and low precision---assuming that further heuristics will help the user identify specific problematic data.
+%These approximations are effective because they can explain a prediction in terms of features of the input data (e.g., linear weights), but are these approximations also useful for debugging?
+%However, these approximations only explain how a model predicts based on features, not what data led the model to predict in that way in the first place.
+% We argue that the ML developers are concerned about what training data most influenced a prediction (i.e., if that data were not present in the training set would the prediction still have been wrong), as this allows them to differentiate between modeling errors and data errors.
+
+
+To this end, our goal is to help the user identify a {\it sub-partition} of the training data that likely influenced the model's misprediction.    
+
+Intuitively, the developer would like to isolate a subset of the training data that helps explain a misprediction. 
+However, for most models, every training data point has some impact on the final result.
+Thus, we simplify the problem to instead identify a {\it sub-partition} of the training data locally approximates the complex model for test points within this sub-partition.  
+To this end, we represent a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model partitions the training data, and a set of sub-models that approximate the patterns within each partition.
+These sub-models can be arbitrarily complex in order to capture local patterns, however the meta-model is constrained to be a decision tree.
+This formulation ensures that sub-models are accurate, while the partitions are interpretable as rules.
+In contrast to existing model interpretation techniques that return locally relevant features, our approach returns the most informative neighborhood (partition).
+
+Applying the trained surrogate model is very simple---if a test point is mispredicted, then we can identify the partition it belongs to and investigate that subset of the training data and its associated sub-model.
+As our experiments show, the developer can tune the total number of sub-models and the depth of the decision tree in order to control the trade-off between the specificity of the partitions and how similar the surrogate model is to the complex model.
+By identifying an entire partition, this approach will naturally identify the training points that likely led to the misprediction, as well as other training points that were irrelevant.   However, we assume that filtering the training data, which can often contain millions or trillions of data points, into a concise starting point for the developer to further explore the training data and more quickly identiy the problematic training data.
+
 
 This leads to our formalization of \emph{debuggability}.
 Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.

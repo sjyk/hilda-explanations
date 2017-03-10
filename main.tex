@@ -147,8 +147,8 @@ Eugene Wu \\
 \maketitle
 
 \begin{abstract}
-Building and debugging Machine Learning applications remains to be time-consuming and effort-intensive.
-High dimensional models are often opaque so diagnosing problems is difficult.
+Building and debugging Machine Learning applications is time-consuming and effort-intensive.
+High dimensional models are often opaque, so diagnosing problems is difficult.
 We introduce the idea of debugability, which is a measure of how well can we isolate tuples in the training dataset that significantly contributed to an erroneous future prediction.
 We explore whether given a user's model, we can train a surrogate model that approximates the original model, but is more debuggable.
 The key insight is that complex models tend to be hierarchical in nature, where there is a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
