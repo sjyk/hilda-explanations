@@ -38,6 +38,7 @@ Intuitively, the developer would like to isolate a subset of the training data t
 However, for most models, every training data point has some impact on the final result.
 Thus, we simplify the problem to instead identify a {\it sub-partition} of the training data locally approximates the complex model for test points within this sub-partition.  
 
+
 To this end, we present \sysfull (\sys).   \sys decomposes a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
 These sub-models can be arbitrarily complex in order to capture local patterns, however the meta-model is constrained to be a decision tree.
 This formulation ensures that sub-models are accurate, while the partitions are interpretable as rules.
@@ -48,7 +49,8 @@ As our experiments show, the developer can tune the total number of sub-models a
 By identifying an entire partition, this approach will naturally identify the training points that likely led to the misprediction, as well as other training points that were irrelevant.   However, we assume that filtering the training data, which can often contain millions or trillions of data points, into a concise starting point for the developer to further explore the training data and more quickly identiy the problematic training data.
 
 The rest of this short paper describes the \sys problem formulation, an algorithm sketch for training surrogate models, as well as an illustration of how \sys can be integrated in a visual model building interface.
-\ewu{NEED EXPERIMENT SUMMARY}
+Our experiments show that we can generate Fast, Approximated but Clear Explanations using \sys.
+Furthermore, \ewu{NEED EXPERIMENT SUMMARY}
 %We have applied our approach to control problems and find that it can improve 
 %Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
 
