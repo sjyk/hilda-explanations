@@ -1,4 +1,5 @@
 \section{Framework and API}
+\ewu{I feel like we should use "\sys model " more consistently}
 This section describes how we model machine learning prediction and the \sys problem.
 Let the training dataset $D$ contain tuples of features $x_i$ and labels $y_i$ that are categorical or real-valued.
 \texttt{train(D)} is a training algorithm that returns a model \texttt{model($\cdot$)} that takes as input a test point $x_{new}$ and predicts a label $\hat{y}_{new}$:
@@ -69,9 +70,10 @@ But, if we observe an anomaly, the meta-model can precisely blame one of the sub
 There is an inherent tradeoff, a meta-model that contains a single partition \texttt{true} can create a sub-model that is nearly identical to the original complex model, however the partition is not useful to the developer.  In contrast, increasing the complexity of the meta-model makes each partition smaller, but the resulting model potentially diverges from the orginal model.  At the limit, the meta-model may simply build a decision tree over the training data, and each partition contains nearly identical points.
 
 \subsection{Learning Meta Models} 
-We propose an algorithm to automatically learn a meta-model and submodels from data to approximate the user's desired model.
+We propose an algorithm to automatically fit a \sys model to training data in order to approximate the user's desired model.
 This algorithm can run offline during the training phase and is generally no-more than a constant factor more expensive than standard model training
-This algorithm is a special case of the algorithm, we proposed in prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, krishnan17}. At a high-level, the algorithm takes the dataset $D$ and the model \textsf{model} as input, and returns $\textsf{smodel}$, which consists of a decision-tree meta model that selects from a collection of $k$ submodels. Given a new record, the user can evaluate both:
+We presented a generalization in prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, krishnan17}. 
+At a high-level, the algorithm takes the dataset $D$ and the model \textsf{model} as input, and returns $\textsf{smodel}$, which consists of a decision-tree meta model that selects from a collection of $k$ submodels. Given a new record, the user can evaluate both:
 \[
 \hat{y}_{new} = \textsf{model}(x_{new})
 \]
@@ -81,8 +83,7 @@ This algorithm is a special case of the algorithm, we proposed in prior work~\ci
 and use the structure of \textsf{smodel} to debug with knowledge that it approximates $\textsf{model}$.
 
 \subsection{API and System}
-We implemented this as a system in Python initially focusing on TensorFlow models.
-For the user, the inputs are:
+Our current implementation is in Python and focused on TensorFlow models.  The user supplies:
 \begin{itemize}
 \item \emph{Featurized Dataset. } The user provides a dataset of feature and label tuples.
 
