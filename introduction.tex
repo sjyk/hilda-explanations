@@ -1,7 +1,6 @@
 \section{Introduction}\label{intro}
 Developing machine learning-based applications is fundamentally iterative---developers must iterate between designing the model, engineering features, cleaning data, analyzing test results, and debugging errors when the model performs poorly~\cite{sculley2014machine, krishnan2016hilda}.
-While the community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, developers are still stuck interpreting test results and trying to understand why a model performs poorly.  This lack of debugging tools is a key bottleneck towards rapid model development.
-
+While the community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, developers are still stuck interpreting test results and trying to understand why a model performs poorly.  This lack of debugging tools is a key bottleneck that limits this iterative model development process.
 
 Debugging machine learning models is challenging because it is often unclear whether a misprediction is due to 
 inconsistencies or errors in the training data, 
@@ -49,7 +48,13 @@ Applying the trained surrogate model is very simple---if a test point is mispred
 As our experiments show, the developer can tune the total number of sub-models and the depth of the decision tree in order to control the trade-off between the specificity of the partitions and how similar the surrogate model is to the complex model.
 By identifying an entire partition, this approach will naturally identify the training points that likely led to the misprediction, as well as other training points that were irrelevant.   However, we assume that filtering the training data, which can often contain millions or trillions of data points, into a concise starting point for the developer to further explore the training data and more quickly identiy the problematic training data.
 
+The rest of this short paper describes the problem formulation for surrogate models that are designed to assist model debugging, an algorithm sketch for training surrogate models, as well as an interface that illustrates how these models can be integrated in a visual model building interface.
+\ewu{NEED EXPERIMENT SUMMARY}
+%We have applied our approach to control problems and find that it can improve 
+%Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
 
+
+\if{0}
 This leads to our formalization of \emph{debuggability}.
 Let $M$ be a model trained on a dataset of feature and label tuples $(x_i,y_i)$.
 Suppose, M sees a new example $x'$ and predicts $y'$ causing a \emph{prediction anomaly} (i.e., incorrect prediction or unsafe output).
@@ -60,7 +65,7 @@ The basic idea is an iterative clustering algorithm that first initializes $k$ m
 Once the k models are trained, we can then learn a meta-model to switch between them.
 When a new example for prediction comes in, the meta-model first picks a sub-model, then the sub-model issues a prediction.
 Our initial results have demonstrated that such an approach can improve convergence and stability in control problems.
-
+\fi
 
 
 
