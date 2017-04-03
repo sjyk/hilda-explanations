@@ -1,12 +1,12 @@
 \section{Algorithm Description}
-In prior work, we designed an algorithm in a completely different context---to decompose complex control policies to reduce planning horizons~\cite{DBLP:journals/corr/KrishnanGLMPG16, Krishnan17}. Surprisingly, when we started discussing our ideas with ML developers, we realized a very similar approach could apply for problems in debugging. 
+In prior work, we designed an algorithm in a completely different context---to decompose complex control policies to reduce planning horizons~\cite{DBLP:journals/corr/KrishnanGLMPG16, krishnan17}. Surprisingly, when we started discussing our ideas with ML developers, we realized a very similar approach could apply for problems in debugging. 
 
 For intuition on how the algorithm works, consider a standard KMeans clustering of dataset. First, $k$ random cluster centers are placed over the feature-space. Then, data are assigned to the nearest cluster. Finally, the clusters are updated based on the assignment, and the algorithm repeats by re-assigning data based on the most recent update.
 
 Similarly, we can do the same thing for model training. $k$ random sub-models are initialized.
 During the ``assignment'' step, a data point is assigned to the sub-model that best predicts it.
 Then, during the update step, the models are updated based on the new assignments with gradient descent.
-This is a variant of the popular Expectation-Maximization algorithm, that instead of a Maximization step, computes a gradient instead. 
+This is a variant of the popular Expectation-Maximization algorithm, that instead of a Maximization step computes a gradient instead. 
 
 This algorithm to run efficiently at scale and directly integrate with TensorFlow's Python API.
 So, at training time (offline) the user can not only train the original model but also the surrogate.
@@ -23,7 +23,7 @@ We want to find $k$ such distributions that best explain all the observations:
 \[
 \{f(\hat{y} \mid x, \theta_1),...,f(\hat{y} \mid x, \theta_k)\}
 \]
-Our results in prior work~\cite{?,Krishnan17} show how this can be optimized with a two-step algorithm:
+Our results in prior work~\cite{krishnan17} show how this can be optimized with a two-step algorithm:
 \begin{itemize}
     \item Initialize $\theta_1,...,\theta_k$ randomly.
     \item Repeat until convergence
@@ -36,7 +36,7 @@ Our results in prior work~\cite{?,Krishnan17} show how this can be optimized wit
     \[ \theta_j \leftarrow \theta_j + \lambda \sum_i^N w(i,j) \nabla \log f(\hat{y}_i \mid x_i, \theta_j)  \]
 \end{itemize}
 
-The intuition behind this algorithm is that after random initialization the initial models will have higher accuracy on different data points (by chance). $w(i,j)$ is a soft-assignment--assigning data points to the model that best explains its prediction. Then, $w(i,j)$ becomes a weight to update the models with Gradient Ascent (or descent over the negative log likelihood). This, process repeats until convergence. This is very similar to the K-Means or EM algorithm but instead of updating the cluster centers with a formula, we take a gradient step.
+The intuition behind this algorithm is that after random initialization the initial models will have higher accuracy on different data points (by chance). $w(i,j)$ is a soft-assignment--assigning data points to the model that best explains its prediction. Then, $w(i,j)$ becomes a weight to update the models with Gradient Ascent (or descent over the negative log likelihood). This process repeats until convergence. This is very similar to the K-Means or EM algorithm, but instead of updating the cluster centers with a formula, we take a gradient step.
 
 \vspace{0.5em} \noindent \textbf{Distillation Step: } The result of the first step is a set of model parameters $k$ $\theta_1,...,\theta_k$, and a weighting function $w(i,j)$. The next step is to distill $w(i,j)$ into a set of explainable rules that select the one of the $k$ models. We first generate a set of hard assignments for each data point:
 \[
@@ -47,7 +47,7 @@ We can now train a more explainable model to select $h$ as a function of the dat
 This intuition is that this is a simpler model that just selects one of the component models.
 
 The user provides us with a list of features that are considered ``explainable'', and let $x_e$ denote the projection of an example onto this subset of features.
-Then, we can train a Decision Tree over the tuples $(x_e, h)$, which have the desirable property of resembling programatic statements.
+Then, we can train a Decision Tree over the tuples $(x_e, h)$, which have the desirable property of resembling programmatic statements.
 We call this model the meta-model, as it selects between the component models.
 
 Finally, putting everything together, we return something that looks similar to the hard-coded example in the previous section:

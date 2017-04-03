@@ -8,13 +8,26 @@
 \end{figure*}
 \fi
 
-\section{Experimental Results}
-This section presents key experimental results  that highlight use cases where \sys models can help identify training data that causes mispredictions, 
-when \sys diverges from the user's more complex model, and a comparison with alternative explanation approaches based on \ewu{nearest-neighbors or classification}.
+\section{Highlighted Experiments}
+This section presents key experimental results that highlight use cases where \sys models can help identify training data that cause mispredictions, 
+when \sys diverges from the user's more complex model, and a comparison with alternative explanation approaches. 
 
-\subsection{Datasets}
+\subsection{Setup}
+We consider the following scenario. Suppose, the model receives a previously unseen test point that is mispredicted, can we identify the subset of training data that ``influences'' this prediction error. 
+\sys returns a subset of training data using the hierarchical approximation, but we could, in principle, apply the following approaches to select relevant training data: 
+
+\vspace{0.25em} \noindent \textbf{Nearest Neighbors: } Suppose, we measure influence purely in terms of similarity to the new data point. We could select the k-nearest neighbors in the training dataset and return them to the user. We set $k$ to be the same as number of data points returned by \sys for the new data point.
+
+\vspace{0.25em} \noindent \textbf{Clustering: }
+Another approach would be to cluster the training examples, and then return the cluster closest to the new data point. We use K-Means and set the number of clusters to 10. 
+
+\vspace{0.25em} \noindent \textbf{Random: } Finally, as a baseline, we could randomly select training examples.  We set the number of selected examples to be the same as number of data points returned by \sys for the new data point.
+
+\noindent \vspace{0.5em} We measure influence in the following way.
+If a sample of labels of the training data outside of the selected subset are randomly perturbed, and the model is retrained, how often does the prediction change. In other words, this is a measure how ``true'' the selected neighborhood is w.r.t how the model implicitly partitions the feature space.
+
+\subsubsection{Datasets}
 We split each dataset into a training dataset $80\%$ and test dataset $20\%$. 
-
 \stitle{Movie: } We have a dataset of movie descriptions IMDB~\footnote{ \url{ftp://ftp.fu-berlin.de/pub/misc/movies/database/}} and Yahoo~\footnote{ \url{http://webscope.sandbox.yahoo.com/catalog.php?datatype=r}}.
 Each movie has a title, a short 1-2 paragraph plot description, year, rating, language, and a list of categories, and the goal is to train a model to predict whether a movie is a ``Horror'' or ``Comedy'' from the description and title.  
 The total dataset has 506,244 records.
@@ -29,6 +42,25 @@ We used a Multi-Layer Perceptron to classify disallowed donations which achieved
 
 \subsection{Experiments}
 
+\stitle{Exp 1. Isolating Mispredictions } 
+In the first experiment, we illustrate one benefit of \sys in terms of how it can explain predictions in terms of subsets of training data. We measure the quality of an explanation in the following way: (1) select a test data point that is mispredicted, (2) construct an explanation of this prediction by selecting a subset of training data, (3) for all examples outside of the selected subset randomly flip the labels of 25\% of the points, (4) retrain the model and observe if the test data point changes its prediction. 
+We run 1000 trials of this procedure for 10 randomly sampled mispredictions and plot the results in Figure \ref{fig:isolation}. 
+This metric measures how well isolated the selected neighborhood is from the other points--in other words, if the other points were changed how much would the prediction change.
+The random baseline changes it prediction roughly 25\% of the time.
+The clustering and the nearest neighbor approaches only consider the feature-space, not the structure of the classifier.
+While they are significantly more robust than random (< 5\%) prediction changes, \sys is much more robust (< 1 \%) prediction changes.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{figures/isolation.png}
+    \caption{\sys isolates relevant training data more effectively than baselines.}
+    \label{fig:isolation}
+\end{figure}
+
+\stitle{Exp 2. Discovering other Misprediction with \sys }  
+In the next experiment, we explore whether mispredictions concentrate around particular submodels. We train the models on 80\% of the dataset, and test on the remaining 20\%. We measure the fraction of mispredictions attributed to each submodel. We want to show that mispredictions concentrate around specific submodels and are not evenly distributed throughout the feature-space. Figure \ref{fig:concentrate} shows this effect when we apply our algorithm to approximate the Movie and Fraud models with $k=10$ submodels. For the Movie dataset, 70\% of the mis-predictions are attributed to a single submodel.
+For the Fraud dataset, 78\% of the errors are attributed to two of the submodels.
+
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{figures/concentration.png}
@@ -36,9 +68,10 @@ We used a Multi-Layer Perceptron to classify disallowed donations which achieved
     \label{fig:concentrate}
 \end{figure}
 
-\stitle{Exp 1. Isolating Mispredictions }  
-In the first experiment, we explore whether mispredictions concentrate around particular submodels. We train the models on 80\% of the dataset, and test on the remaining 20\%. We measure the fraction of mispredictions attributed to each submodel. We want to show that mispredictions concentrate around specific submodels and are not evenly distributed throughout the feature-space. Figure \ref{fig:concentrate} shows this effect when we apply our algorithm to approximate the Movie and Fraud models with $k=10$ submodels. For the Movie dataset, 70\% of the mis-predictions are attributed to a single submodel.
-For the Fraud dataset, 78\% of the errors are attributed to two of the submodels.
+\stitle{Exp 3. Agreement With the Original Model}
+We now measure the agreement between the \sys model with the original model as we increasing the number of partitions $k$ (Figure~\ref{fig:agreement}, where agreement is the accuracy with respect to the original model.
+We find that with $k=16$, both \sys models still retain $>90\%$ agreement with the original model.
+This suggests that \sys can help developers identify more precise subsets of the training data while still trusting that the \sys models are reflective of the original model.
 
 \begin{figure}[ht]
     \centering
@@ -47,28 +80,34 @@ For the Fraud dataset, 78\% of the errors are attributed to two of the submodels
     \label{fig:agreement}
 \end{figure}
 
-\stitle{Exp 2. Agreement With the Original Model}
-We now measure the agreement between the \sys model with the original model as we increasing the number of partitions $k$ (Figure~\ref{fig:agreement}, where agreement is the accuracy with respect to the original model.
-We find that with $k=16$, both \sys models still retain $>90\%$ agreement with the original model.
-\ewu{SANJAY CHECK:} This suggests that \sys can help developers identify more precise subsets of the training data while still trusting that the \sys models are reflective of the original model.
 
-
-\stitle{Exp 3. Faster and More Accurate than Nearest Neighbors}  
-An alternative approach is to find training data that are nearby neighbors of the mispredicted test point\ewu{, or to train a decision tree directly on the correctly and incorrectly classified test points}, however each approach has their drawbacks.
-For the nearest neighbors approach, it is possible to quickly find the neighbors by using intelligent indexing structures such as KD-trees or Oct-trees.  However spatial indices are well known to have difficulty scaling to very high dimensional datasets.  \ewu{In addition, finding the neighbors in a high dimensional space may simply not identify relevant results.
-The classification approach is fast, however it ignores the user's original model and may also identify spurious rules.}
-On the other hand, \sys is explicitly designed to mimic the user's model, and the decision tree learned by the meta-modelcan easily be used to index or partition the training data can be indexed.
-Our approach returns more than 20x faster than a nearest neighbor search even when coupled with dimensionality reduction and a KD-Tree \ewu{talk about quality of results and compare with classification.}
+\stitle{Exp 4. \sys is efficient} 
+\sys can run offline during training time and queries to \sys are very efficient as it simply involves a decision tree evaluation.
+\sys is explicitly designed to mimic the user's model, and the decision tree learned by the meta-model can easily be used to index or partition the training data can be indexed.
+For the nearest neighbors approach, it is possible to quickly find the neighbors by using intelligent indexing structures such as KD-trees or Oct-trees.  However spatial indices are well known to have difficulty scaling to very high dimensional datasets.  In addition, finding the neighbors in a high dimensional space may simply not identify relevant results. One could apply dimensionality reduction but this would further reduce its efficacy.
+On the other hand the clustering approach is much faster because it only requires querying each cluster center.
+Our interesting insight is that \sys is much faster than the nearest neighbor approach, and competitive with the clustering approach in terms of run time.
+Our approach returns more than 30x faster than a nearest neighbor search even when coupled with dimensionality reduction and a KD-Tree.
+The clustering approach is much faster but \sys is still within the latencies needed for interactive latencies.
 
 \begin{table}[ht!]
 \centering
-\caption{Runtimes of the different algorithms}
+\caption{Run times of the different algorithms in seconds}
 \label{my-label}
 \begin{tabular}{lll}
 Algorithm & Movie & Fraud \\ \hline
 kNN & 35.61 & 22.11  \\
-kNN+PCA & 12.34 & 8.97  \\
-Ours & 0.534 & 0.31 
+kNN+PCA & 12.34 & 6.97  \\
+\sys & 0.334 & 0.31  \\
+Clustering & 0.07 & 0.06
 \end{tabular}
 \end{table}
 
+\section{Conclusion}
+We presented \sysfull (\sys), a system to explain a model's prediction in terms of relevant training data.  \sys decomposes a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
+These sub-models can be arbitrarily complex to capture local patterns. However the meta-model is constrained to be a decision tree.
+This formulation ensures that sub-models are accurate, while the partitions are interpretable as rules.
+In contrast to existing model interpretation techniques that return locally relevant features, our approach returns the most informative neighborhood (partition).
+Our experiments show that we can generate Fast And Clear Explanations using \sys.
+We show that the explanations found by \sys select subsets of data that better align with the structure of the original model than the nearest neighbor or clustering baseline.
+Furthermore, we show that \sys is nearly 30x faster than a nearest neighbor query, which is the next most accurate baseline.

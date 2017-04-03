@@ -27,6 +27,7 @@
 \usepackage[mathscr]{eucal}
 %\usepackage{psfrag}
 \usepackage{colortbl}
+\usepackage{times}
 
 
 \usepackage{bm}
@@ -151,12 +152,18 @@ Eugene Wu \\
 \maketitle
 
 \begin{abstract}
-Building and debugging Machine Learning applications is time-consuming and effort-intensive.
-High dimensional models are often opaque, so diagnosing problems is difficult.
-We introduce the idea of debugability, which is a measure of how well can we isolate tuples in the training dataset that significantly contributed to an erroneous future prediction.
-We explore whether given a user's model, we can train a surrogate model that approximates the original model, but is more debuggable.
+Debugging a machine learning application is notoriously time consuming.
+It is often unclear whether a misprediction is due to 
+inconsistencies or errors in the training data, 
+limitations of the model or features,
+or simply because there are not enough training examples. 
+Opaque, complex, and high-dimensional models can exacerbate this problem, and existing work focuses on making such models interpretable to the end-user---not necessarily the data scientists developing the application.
+Intuitively, the data scientist needs a tool to isolate a subset of the training data that helps explain a misprediction.
+To this end, we present \sysfull (\sys).
+\sys approximates a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
 The key insight is that complex models tend to be hierarchical in nature, where there is a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
-We propose algorithms to infer such structure and argue that it has applications in debugging Machine Learning.
+The user can use \sys to guide data exploration to identify problematic examples in the training dataset.
+Queries to \sys are nearly 30x faster than nearest neighbor queries in terms of identifying relevant data.
 \end{abstract}
 
 

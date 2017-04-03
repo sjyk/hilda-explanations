@@ -1,5 +1,4 @@
 \section{Framework and API}
-\ewu{I feel like we should use "\sys model " more consistently}
 This section describes how we model machine learning prediction and the \sys problem.
 Let the training dataset $D$ contain tuples of features $x_i$ and labels $y_i$ that are categorical or real-valued.
 \texttt{train(D)} is a training algorithm that returns a model \texttt{model($\cdot$)} that takes as input a test point $x_{new}$ and predicts a label $\hat{y}_{new}$:
@@ -33,7 +32,7 @@ She considers three possibilities:
 \item \emph{(P3) Data Error.} The record $x_{new}$ is not consistent with respect to the training data, i.e., it represents the same information differently--leading to an unpredictable featurization.
 \end{itemize}
 The challenge for the data scientist is to determine which of these categories of errors best describes why the claim was mispredicted.
-Intuitively, her process is to look at how ``similar'' tuples in the training dataset were predicted and compare to the given record. This will allow her to evaluate whether the problem is inherent to the model class or due to a fault of the training dataset or data processing pipeline. 
+Intuitively, her process is to look at how ``similar'' tuples in the training dataset were predicted and compared to the given record. This will allow her to evaluate whether the problem is inherent to the model class or due to a fault of the training dataset or data processing pipeline. 
 
 Existing approaches: 
 \begin{itemize}
@@ -42,14 +41,14 @@ Existing approaches:
 \item \emph{(S2) Use A Simpler Model.} The data scientist can use any number of techniques to use the interpretable model from the start, then apply her domain expertise to understand why an error occurred.
 \end{itemize}
 
-The problem with (S1) and (S2) is that the prediction problem necessarily needs complex models. In the running example, there is a textual field \textsf{descr}, which might be a very valuable feature for predicting fraud. Processing such data typically requires translating the data into a higher-dimensional feature space by using NLP methods such as word-embeddings, stop word removal, bi-gram featurization, etc.  By design, this feature space may not be interpretable by anyone other than a language expert, and using a simpler model may not achieve the desired accuracy. Furthermore, highly expressive deep models such as deep neural networks, which in principle can learn any deterministic function, are susceptible to adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction)\cite{szegedy2013intriguing}. This means that relying on neighboring points can be unreliable or even misleading because they may inadvertantly be adversarial.  The approach that we propose identifies records that the {\it classifier} considers similar, rather than naive similarity in the feature space.
+The problem with (S1) and (S2) is that the prediction problem necessarily needs complex models. In the running example, there is a textual field \textsf{descr}, which might be a very valuable feature for predicting fraud. Processing such data typically requires translating the data into a higher-dimensional feature space by using NLP methods such as word-embeddings, stop word removal, bi-gram featurization, etc.  By design, this feature space may not be interpretable by anyone other than a language expert, and using a simpler model may not achieve the desired accuracy. Furthermore, highly expressive deep models such as deep neural networks, which in principle can learn any deterministic function, are susceptible to adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction)\cite{szegedy2013intriguing}. This means that relying on neighboring points can be unreliable or even misleading because they may inadvertently be adversarial.  The approach that we propose identifies records that the {\it classifier} considers similar, rather than naive similarity in the feature space.
 
 \subsection{Debugging with \sys}
-Our goal is to isolate points in the training data that significantly contributed to a anomalous prediction $\hat{y}_{new}$.
+Our goal is to isolate points in the training data that significantly contributed to an anomalous prediction $\hat{y}_{new}$.
 Given a model $\textsf{model}(\cdot)$, we want to train a surrogate \sys model $\textsf{smodel}(\cdot)$ that approximates the original model, but can help the developer identify such points.
 The structure of a \sys model is a meta-model that partitions the training data, and a local sub-model for each partition that is {\it Partition Aware}.
 \sys models can be viewed as a generalization of piecewise linear models to higher dimensional spaces, and for arbitrary non-linear models.     
-In this paper, we focus on decision trees for the meta-model, and the same model class as \texttt{model} for the sub-models, however, it may be possible to exhibit different accuracy and explanatory behaviors by varying the class of models we use for the meta-model and sub-models.
+In this paper, we focus on decision trees for the meta-model, and the same model class as \texttt{model} for the sub-models. However, it may be possible to exhibit different accuracy and explanatory behaviors by varying the class of models we use for the meta-model and sub-models.
 
 As an illustrative example, consider when the meta model is much simpler.
 For example, imagine if we hard-coded the following logic:
@@ -65,13 +64,13 @@ def smodel(x):
     #a default model
         return submodel_3(x)
 \end{lstlisting}
-Even though meta model is simple (in fact it is a decision tree), the full model \texttt{smodel} can still model complex patterns due to the complex sub-models.  Thus, we do not sacrafice model accuracy in the same way as simpler model approximations.
+Even though meta model is simple (in fact it is a decision tree), the full model \texttt{smodel} can still model complex patterns due to the complex sub-models.  Thus, we do not sacrifice model accuracy in the same way as simpler model approximations.
 But, if we observe an anomaly, the meta-model can precisely blame one of the submodels; thereby, providing a coarse predicate to select tuples that are assigned to that model.
-There is an inherent tradeoff, a meta-model that contains a single partition \texttt{true} can create a sub-model that is nearly identical to the original complex model, however the partition is not useful to the developer.  In contrast, increasing the complexity of the meta-model makes each partition smaller, but the resulting model potentially diverges from the orginal model.  At the limit, the meta-model may simply build a decision tree over the training data, and each partition contains nearly identical points.
+There is an inherent tradeoff, a meta-model that contains a single partition \texttt{true} can create a sub-model that is nearly identical to the original complex model. However the partition is not useful to the developer.  In contrast, increasing the complexity of the meta-model makes each partition smaller, but the resulting model potentially diverges from the original model.  At the limit, the meta-model may simply build a decision tree over the training data, and each partition contains nearly identical points.
 
 \subsection{Learning Meta Models} 
-We propose an algorithm to automatically fit a \sys model to training data in order to approximate the user's desired model.
-This algorithm can run offline during the training phase and is generally no-more than a constant factor more expensive than standard model training
+We propose an algorithm to automatically fit a \sys model to training data to approximate the user's desired model.
+This algorithm can run offline during the training phase and is no-more than a constant factor more expensive than standard model training
 We presented a generalization in prior work~\cite{DBLP:journals/corr/KrishnanGLMPG16, krishnan17}. 
 At a high-level, the algorithm takes the dataset $D$ and the model \textsf{model} as input, and returns $\textsf{smodel}$, which consists of a decision-tree meta model that selects from a collection of $k$ submodels. Given a new record, the user can evaluate both:
 \[
