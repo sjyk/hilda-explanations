@@ -5,6 +5,7 @@ For instance, if a model makes a bad prediction (e.g., drive into a wall), it is
 Although this used to be easy to understand because models were simple, the popularity and empirical effectiveness of complex models such as neural networks have made it harder.
 In contrast to prior models such as SVMs, whose structure can be used to aid interpretability, modern models effectively learn a complex function over a massive training dataset using a black-box optimization process.
 While the database community has made substantial progress in aiding other areas of machine learning (e.g., training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}), there is a lack of suitable debugging tools for modern models.
+\ewu{I would like the message to be: modern ML pretty much solely depends on the training data, so that is a good place to look if things go wrong}
 
 
 % Due to the complexity of modern machine learning models such as neural networks, traditional database techniques such as lineage for root cause analysis and integrity constraints for detecting logical violations are not directly applicable.
@@ -17,10 +18,11 @@ While the database community has made substantial progress in aiding other areas
 % This challenge is exacerbated by the prevalence of increasingly opaque and high-dimensional models such as Neural Networks, where even considering nearest neighbors might be misleading.
 % While the database community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, the lack of a suitable machine learning analog of data provenance is a critical bottleneck in the development of debugging tools.
 
-As a concrete example, consider designing a control module for self-driving cars using machine learning.
+As a concrete example, consider designing a model for controlling the steering of a self-driving car.
+If, during simulation or testing, the models predicts that the car should turn into a sidewalk, the developer needs to quickly identify possible reasons for the misprediction.
+(1) what training data influenced this prediction, (2) how different was this training data from the test example, and (3) whether the differences were due to genuine variation or systematic data inconsistencies.  
 It is unlikely that there is an exhaustive set of training examples for every possible driving condition (e.g., during a once in five years storm).
 Consequently, during deployment, the model will have to make predictions for new test data for which there are few similar examples in the training set.
-When one of these predictions goes awry, the developer needs to understand: (1) what training data influenced this prediction, (2) how different was this training data from the test example, and (3) whether the differences were due to genuine variation or systematic data inconsistencies.  
 
 \begin{figure}
     \centering
