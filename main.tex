@@ -1,5 +1,4 @@
-\documentclass{sig-alternate}
-
+\documentclass[sigconf]{acmart}
 
 \usepackage{enumitem}
 \usepackage{framed}
@@ -15,8 +14,7 @@
 \usepackage{xspace,colortbl}
 \usepackage[USenglish]{babel}
 \usepackage{multirow}
-\usepackage[hyphens]{url}
-\usepackage{subfigure}
+\usepackage{url}
 \usepackage{graphicx}%%
 \usepackage{amssymb}
 \usepackage{fmtcount}
@@ -31,7 +29,7 @@
 
 
 \usepackage{bm}
-\usepackage[nospace]{cite}
+%\usepackage[nospace]{cite}
 \usepackage{csquotes}
 \usepackage{enumitem}
 
@@ -41,7 +39,11 @@
 
 %\linespread{0.99}
 
-
+\copyrightyear{2017} 
+\acmYear{2017} 
+\setcopyright{acmcopyright}
+\acmConference{HILDA'17}{May 14, 2017}{Chicago, IL, USA}\acmPrice{15.00}\acmDOI{http://dx.doi.org/10.1145/3077257.3077271}
+\acmISBN{978-1-4503-5029-7/17/05}
 
 \begin{document}
 
@@ -49,15 +51,6 @@
 \setlength{\abovedisplayskip}{3pt} \setlength{\abovedisplayshortskip}{3pt}
 \setlength{\belowcaptionskip}{-10pt}
 \selectfont
-
-\newtheorem{theorem}{Theorem}
-\newtheorem{example}{Example}
-\newtheorem{definition}{Definition}
-\newtheorem{problem}{Problem}
-\newtheorem{property}{Property}
-\newtheorem{proposition}{Proposition}
-\newtheorem{lemma}{Lemma}
-\newtheorem{corollary}{Corollary}
 
 \newcommand{\cond}{\textrm{pred}\xspace}
 \newcommand{\dataset}{data set\xspace}
@@ -122,7 +115,6 @@
 %\setlength{\belowcaptionskip}{-10pt}
 
 %\newcommand{\reminder}[1] {}
-\pagestyle{plain}
 
 %\input{coverletter.tex}
 
@@ -130,42 +122,35 @@
 %\title{Towards Machine Learning Model Explanations That Are Useful For Debugging}
 \title{\sys: Machine Learning Explanations For Iterative Debugging}
 
-\numberofauthors{2}
+%\numberofauthors{2}
 
-\author{ 
-\alignauthor
-Sanjay Krishnan \\
-\affaddr{ UC Berkeley} \\
-\affaddr{ sanjaykrishnan@berkeley.edu}\\
-\alignauthor
-Eugene Wu \\
-\affaddr{ Columbia University} \\
-\affaddr{ ewu@cs.columbia.edu}\\
-%\affaddr{}
-}
+
+\author{Sanjay Krishnan}
+\affiliation{\institution{UC Berkeley}}
+\email{sanjaykrishnan@berkeley.edu}
+
+\author{Eugene Wu}
+\affiliation{\institution{Columbia University}}
+\email{ewu@cs.columbia.edu}
 
 
 %\fontsize{9pt}{11pt}
 %\selectfont
 
 
-\maketitle
+
 
 \begin{abstract}
-Debugging a machine learning application is notoriously time consuming.
-It is often unclear whether a misprediction is due to 
-inconsistencies or errors in the training data, 
-limitations of the model or features,
-or simply because there are not enough training examples. 
-Opaque, complex, and high-dimensional models can exacerbate this problem, and existing work focuses on making such models interpretable to the end-user---not necessarily the data scientists developing the application.
-Intuitively, the data scientist needs a tool to isolate a subset of the training data that helps explain a misprediction.
-To this end, we present \sysfull (\sys).
-\sys approximates a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
-The key insight is that complex models tend to be hierarchical in nature, where there is a collection of more compartmentalized models (ones that only apply to certain types of examples), and a meta model that selects which one of the sub-models is relevant to the example at hand.
+Emerging applications for machine learning in computer vision and natural language processing are using ever more complex and high-dimensional models.
+To effectively debug such applications,  we argue that developers need a form of data provenance, namely, where they can isolate a small set of training examples that explain why a new example was predicted in a certain way.
+Linking a prediction to responsible training data allows a data scientist to look for inconsistencies between training and test data, and understand the structure of a complex model.
+The challenge is that in most models are coupled in nature where every training example contributes to a prediction in some way.
+We present \sysfull (\sys), which approximates a complex model (e.g., a deep neural network) using a two-part surrogate model: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
 The user can use \sys to guide data exploration to identify problematic examples in the training dataset.
-Queries to \sys are nearly 30x faster than nearest neighbor queries in terms of identifying relevant data.
+Queries to \sys are nearly 30x faster than nearest neighbor queries for identifying relevant data, which is a key property for interactive applications.
 \end{abstract}
 
+\maketitle
 
 \pagenumbering{gobble}
 
@@ -175,7 +160,7 @@ Queries to \sys are nearly 30x faster than nearest neighbor queries in terms of 
 \input{algorithm.tex}
 \input{interface.tex}
 \input{teaser.tex}
-%\input{relatedwork.tex}
+\input{relatedwork.tex}
 
 %\input{problem_statement.tex}
 %\input{architecture.tex}
@@ -201,8 +186,14 @@ Queries to \sys are nearly 30x faster than nearest neighbor queries in terms of 
 
 %\bibliographystyle{abbrv}
 %\scriptsize
-\fontsize{8.8pt}{9.9pt} \selectfont
-\bibliographystyle{abbrv}
+
+\vspace{0.5em}
+\noindent \textbf{Acknowledgements: }
+This research was supported in part by a seed grant from the UC Berkeley Center for Information Technology in the Interest of Society (CITRIS), the UC Berkeley RISELab, and by the U.S. National Science Foundation under Award IIS-1227536: Multilateral Manipulation by Human-Robot Collaborative Systems. This work has been supported in part by funding from Google and and Cisco.
+
+
+%\fontsize{8.8pt}{9.9pt} \selectfont
+\bibliographystyle{ACM-Reference-Format}
 \bibliography{ref,explainability} 
 \normalsize \selectfont
 %\appendix

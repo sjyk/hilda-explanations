@@ -48,7 +48,7 @@ We run 1000 trials of this procedure for 10 randomly sampled mispredictions and 
 This metric measures how well isolated the selected neighborhood is from the other points--in other words, if the other points were changed how much would the prediction change.
 The random baseline changes it prediction roughly 25\% of the time.
 The clustering and the nearest neighbor approaches only consider the feature-space, not the structure of the classifier.
-While they are significantly more robust than random (< 5\%) prediction changes, \sys is much more robust (< 1 \%) prediction changes.
+While they are significantly more robust than random ($\le$ 5\%) prediction changes, \sys is much more robust ($\le$ 1 \%) prediction changes.
 
 \begin{figure}[ht]
     \centering
@@ -102,12 +102,3 @@ kNN+PCA & 12.34 & 6.97  \\
 Clustering & 0.07 & 0.06
 \end{tabular}
 \end{table}
-
-\section{Conclusion}
-We presented \sysfull (\sys), a system to explain a model's prediction in terms of relevant training data.  \sys decomposes a complex model (e.g., a deep neural network) using a two-part {\it surrogate model}: a meta-model that partitions the training data, and a set of sub-models that approximate the patterns within each partition.
-These sub-models can be arbitrarily complex to capture local patterns. However the meta-model is constrained to be a decision tree.
-This formulation ensures that sub-models are accurate, while the partitions are interpretable as rules.
-In contrast to existing model interpretation techniques that return locally relevant features, our approach returns the most informative neighborhood (partition).
-Our experiments show that we can generate Fast And Clear Explanations using \sys.
-We show that the explanations found by \sys select subsets of data that better align with the structure of the original model than the nearest neighbor or clustering baseline.
-Furthermore, we show that \sys is nearly 30x faster than a nearest neighbor query, which is the next most accurate baseline.

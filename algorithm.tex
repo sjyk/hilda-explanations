@@ -47,18 +47,9 @@ We can now train a more explainable model to select $h$ as a function of the dat
 This intuition is that this is a simpler model that just selects one of the component models.
 
 The user provides us with a list of features that are considered ``explainable'', and let $x_e$ denote the projection of an example onto this subset of features.
-Then, we can train a Decision Tree over the tuples $(x_e, h)$, which have the desirable property of resembling programmatic statements.
+Then, we can train a decision tree over the tuples $(x_e, h)$, which have the desirable property of resembling programmatic statements.
+This decision tree is a multi-class classifier that predicts the assignment to a submodel as a function of the intrepretable features.
 We call this model the meta-model, as it selects between the component models.
-
-Finally, putting everything together, we return something that looks similar to the hard-coded example in the previous section:
-\begin{lstlisting}
-def smodel(x):
-    if amount > 10000:
-        return f_theta1(x)
-    elif a_fault:
-        return f_theta2(x)
-    else:
-        return f_theta3(x)
-\end{lstlisting}
+Finally, putting everything together, we return something that looks similar to the hard-coded example in the previous section.
 The surrogate model $\textsf{smodel}(\cdot)$ encapsulates submodels that apply in different parts of the feature-space.
 Suppose, we observe an anomaly, we can now blame a specific model and efficiently get a predicate that selects all of the data the contributed to the model.

@@ -1,2 +1,30 @@
-\section{Related Work}
+\section{Recent Related Work and Next Steps}
 The study of model intepretability and explainability is recently a hot topic in ML research~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}, especially in the context of Neural Networks. 
+An example of one such approach is to train a sparse linear model in the local neighborhood of a point\cite{lei2016rationalizing}.
+Another more recent approach in computer vision is to use attention models, enforce that the model focuses on certain features, for explainability~\cite{kim2017interpretable}.
+Another relevant line of work is Neural Network Rule Extraction~\cite{hailesilassie2016rule}.
+This problem is very challenging since highly expressive deep models such as deep neural networks, which in principle can learn any deterministic function, are susceptible to adversarial examples (i.e., imperceptible perturbations to the features that cause a change in prediction)\cite{szegedy2013intriguing}.
+Explaining a prediction exactly in terms of features is highly useful for an end-user, but developers also need to be able to trace modeling errors to training data~\cite{DBLP:journals/pvldb/KrishnanWWFG16}.
+This is why our approach focuses on identifying the most informative neighborhood (partition) of training data.
+We believe that techniques that isolate features and data are complementary and hope to explore combinations of the two in the future.
+
+Based on our initial study and survey of recent related work, we have highlighted a number of important challenges for the future systems.
+
+\vspace{0.5em}\noindent\textbf{Connecting Explainability to Data Provenance: } We believe that there is further work to be done to explain predictions in terms of relevant source data. Systems like \sys can be connected to lineage systems to trace even further upstream than just the training data. This leads a number of computational challenges in storing, processing, and summarizing the selected tuples.
+
+\vspace{0.5em}\noindent\textbf{Reducing Hyper-Parameters and Failure Modes: } Ironically, existing work in explainable models, including \sys, all have subtle failure modes due to their assumptions and hyper-parameters. This could lead to faulty or misleading explanations and erode user trust. We hope to explore techniques that require less tuning and less detailed understanding of the mathematical structure of the problem in the future.
+
+\vspace{0.5em}\noindent\textbf{Scalability of Human Effort: } Finally, an important concern is how human analysts can explore and iterate through large training datasets. While systems like \sys can reduce the burden, there are still many more hurdles before truly useful machine learning debuggers. We believe that coupling explanations with anomaly detection may be a viable next step, as in the MacroBase project~\cite{bailis2017macrobase}.
+
+
+
+
+
+
+
+
+
+
+
+
+
