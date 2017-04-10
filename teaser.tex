@@ -26,7 +26,7 @@ Another approach would be to cluster the training examples, and then return the 
 \noindent \vspace{0.5em} We measure influence in the following way.
 If a sample of labels of the training data outside of the selected subset are randomly perturbed, and the model is retrained, how often does the prediction change. In other words, this is a measure how ``true'' the selected neighborhood is w.r.t how the model implicitly partitions the feature space.
 
-\subsubsection{Datasets}
+\subsection{Datasets}
 We split each dataset into a training dataset $80\%$ and test dataset $20\%$. 
 \stitle{Movie: } We have a dataset of movie descriptions IMDB~\footnote{ \url{ftp://ftp.fu-berlin.de/pub/misc/movies/database/}} and Yahoo~\footnote{ \url{http://webscope.sandbox.yahoo.com/catalog.php?datatype=r}}.
 Each movie has a title, a short 1-2 paragraph plot description, year, rating, language, and a list of categories, and the goal is to train a model to predict whether a movie is a ``Horror'' or ``Comedy'' from the description and title.  
@@ -35,7 +35,7 @@ First, using TensorFlow, we trained a LSTM-based model to predict these categori
 The next two layers consist of dense layers that map the words from the feature-space to classification outputs.
 The result is a model that achieves 93\% accuracy, which is far more accurate than simpler alternatives on a Bag-of-Words featurization (random forests 90\%, Linear SVM 81\%, Kernel SVM 85\%).
 
-\stitle{Fraud: } ProPublica collected a dataset of corporate donations to medical researchers to analyze conflicts of interest~\cite{dollarsfordocs}. 
+\stitle{Fraud: } ProPublica collected a dataset of corporate donations to medical researchers to analyze conflicts of interest. 
 Records contain the PI's medical specialty, the drug brand name (null if not drug), the device brand name (null if not a device), name of pharamceutical donor, the amount donated, and whether the research is disputed.
 The dataset comes with a \texttt{status} field that describes whether or not the donation was allowed under the declared research protocol.
 We used a Multi-Layer Perceptron to classify disallowed donations which achieved a 82\% accuracy (random forest 81\%, Linear SVM 80\%, Kernel SVM 80\%).
