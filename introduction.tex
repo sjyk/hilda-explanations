@@ -1,37 +1,38 @@
 \section{Introduction}\label{intro}
-Machine learning is increasingly an integral part of many software systems for fraud detection, content recognition, automation, and control.
-As this trend continues, the ability to debug and explain predictions made by machine learning models is crucial towards understanding failure cases and further improving their predictive accuracy.
-For instance, if a model makes a bad prediction (e.g., drive into a wall), it is important to be able to understand the underlying reasons for usch a prediction---this can be in the form of features, input records, or rules used to make the prediction.
-If the model is highly structured---for instance, a decision tree partitions the training dataset using axis parallel splits---then its structure can be used to generate explanations for faulty predictions.
-In contrast, modern machine learning models such as deep neural networks effectivey learn a complex function over a massive training dataset using a black-box optimization process.
-\ewu{say something about how it is turing complete}
+Machine learning (ML) is increasingly an integral part of many software systems---from fraud detection, to content recognition, to automation.
+This increased reliance on ML leads to the cruicial need to develop tools to debug and explain these models in order to understand failure cases and further improve their accuracy.
+Traditional ML models were highly structured---decision trees are constrained to axis parallel splits---and their structure could be used to generate explanations for debugging.
+In contrast, modern machine learning models such as deep neural networks~\cite{} learn their structure directly from the training data.
+This results in uninterpretable, black-box models that render existing ML debugging tools ineffective.
 While the database community has made substantial contributions in other areas of machine learning (e.g., training scalability and model specification~\cite{hellerstein2012madlib,tensor,kraska2013mlbase,crotty2014tupleware,keystone}), the opportunity is ripe for developing scalable tools to debug modern machine learning models.
-\ewu{I would like the message to be: modern ML pretty much solely depends on the training data, so that is a good place to look if things go wrong}
 
+Existing work on model debugging fall into two categories:
+the first uses more structured models that are naturally easier to interpret, while the latter explains complex black-box models using a simplified approximation (a {\it surrogate model})~\cite{
+taylor2016alignment, lei2016rationalizing, ribeiro2016should}. 
+The former approach sacrifices prediction accuracy, which is a trade-off that many model applications are not willing to make.
+\ewu{The latter approach is still a new field}.
+One example is to identify a subset of the training data in the neighborhood of a mis-predicted test record, and fit an interpretable surrogate model to the subset of data~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
+For instance, Ribeiro et al~\cite{ribeiro2016should} fit a sparse linear model and use the feature weights to explain the misprediction.
 
-% Due to the complexity of modern machine learning models such as neural networks, traditional database techniques such as lineage for root cause analysis and integrity constraints for detecting logical violations are not directly applicable.
-% Whereas lineage can be used to identify the responsible input records that contributed to anamolous query results~\cite{} (perhaps identified by integrity constraints on the output view), model predictions typically depend on every record in the training dataset.  This renders traditional lineage-based debugging too imprecise to be effective.
-% This challenge is exacerbated by the prevalence of increasingly opaque and high-dimensional models such as Neural Networks, where even considering nearest neighbors might be misleading.
-% While the database community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, the lack of a suitable machine learning analog of data provenance is a critical bottleneck in the development of debugging tools.
-
-\ewu{Exsiting work using model structure.  Recent work suggests surrogate models by using nearest neighbor. They find features, but not the relevant data. }
-Existing work proposes techniques to enhance model interpretability as one possible solution.
-Interpretability can be achieved in two ways: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. Neither approach is perfect. 
-Using a simpler model sacrifices prediction accuracy, which is a trade-off that many model applications are not willing to make.
-An example of the second approach is to train a sparse linear model in the local neighborhood of a mispredicted point as a proxy to explain the characteristics (features) that caused the misprediction\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
-Although these approximations can identify salient features, they do not help identify the {\it training data} that led the model towards the misprediction, which might be more useful to a model developer.
-This could potentially hide data representation inconsistencies between the training and test data.
-Identifying this training data is increasingly important when debugging deep neural network models due to their heavy reliance on large training datasets, which may not always be highly curated and consistent.
-
-
-\ewu{Why is finding the training data important?  Highligt via an example.}
-As a concrete example, consider designing a model for controlling the steering of a self-driving car.
-If, during simulation or testing, the models predicts that the car should turn into a sidewalk, the developer needs to quickly identify possible reasons for the misprediction.
-Due to its strong dependence on the training data, there are three natural questions that arise:
-(1) what training data most influenced this prediction? (2) how different was this training data from the test example? and (3) where the differences were due to genuine variation or systematic errors in the training data?
+Although these approximations can identify salient features, deep neural networks are more reliant on the training data rather than features of the training records.
+It may be more natural to help the developer answer questions such as:
+  (1) what training data most influenced this prediction? (2) how different was this training data from the test example? and (3) where the differences were due to genuine variation or systematic errors in the training data?
 Answering these questions can help the developer focus on cleaning the training dataset, gather more training data, or augmenting the model.
-%It is unlikely that there is an exhaustive set of training examples for every possible driving condition (e.g., during a once in five years storm).
-%Consequently, during deployment, the model will have to make predictions for new test data for which there are few similar examples in the training set.
+
+
+\if{0}
+  This could potentially hide data representation inconsistencies between the training and test data.
+  Identifying this training data is increasingly important when debugging deep neural network models due to their heavy reliance on large training datasets, which may not always be highly curated and consistent.
+
+
+  \ewu{The (1), (2), (3) is actually the most useful bit of text.  the rest could probably be cut if they can be moved elsewhere}
+  As a concrete example, consider designing a model for controlling the steering of a self-driving car.
+  If, during simulation or testing, the models predicts that the car should turn into a sidewalk, the developer needs to quickly identify possible reasons for the misprediction.
+  Due to its strong dependence on the training data, there are three natural questions that arise:
+  Answering these questions can help the developer focus on cleaning the training dataset, gather more training data, or augmenting the model.
+  %It is unlikely that there is an exhaustive set of training examples for every possible driving condition (e.g., during a once in five years storm).
+  %Consequently, during deployment, the model will have to make predictions for new test data for which there are few similar examples in the training set.
+\fi
 
 \begin{figure}
     \centering
@@ -43,7 +44,7 @@ Answering these questions can help the developer focus on cleaning the training 
 
 
 
-\ewu{From this example, we argue for explaining model mispredictions by identifying and summarizing the subset of training data that most influenced the prediction of a test record.}
+For these reasons, we propose explaining mispredictions by identifying and summarizing the subset of training data that most influenced a mis-prediction.
 %the missing piece is analogous to data provenance in traditional relational or data flow programs, where given an output tuple, the system describes the set of input tuples that cause it to be in the result.
 %In the case of learning, our objective is to select a set of training data examples that most influence a prediction of a new example.
 By influence, we mean that if the labels or features were perturbed for this subset, it would be more likely to change the prediction.
