@@ -14,6 +14,17 @@ While the database community has made substantial contributions in other areas o
 % This challenge is exacerbated by the prevalence of increasingly opaque and high-dimensional models such as Neural Networks, where even considering nearest neighbors might be misleading.
 % While the database community has made substantial progress in training scalability and model specification~\cite{hellerstein2012madlib,tensor, kraska2013mlbase, crotty2014tupleware, keystone}, the lack of a suitable machine learning analog of data provenance is a critical bottleneck in the development of debugging tools.
 
+\ewu{Exsiting work using model structure.  Recent work suggests surrogate models by using nearest neighbor. They find features, but not the relevant data. }
+Existing work proposes techniques to enhance model interpretability as one possible solution.
+Interpretability can be achieved in two ways: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. Neither approach is perfect. 
+Using a simpler model sacrifices prediction accuracy, which is a trade-off that many model applications are not willing to make.
+An example of the second approach is to train a sparse linear model in the local neighborhood of a mispredicted point as a proxy to explain the characteristics (features) that caused the misprediction\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
+Although these approximations can identify salient features, they do not help identify the {\it training data} that led the model towards the misprediction, which might be more useful to a model developer.
+This could potentially hide data representation inconsistencies between the training and test data.
+Identifying this training data is increasingly important when debugging deep neural network models due to their heavy reliance on large training datasets, which may not always be highly curated and consistent.
+
+
+\ewu{Why is finding the training data important?  Highligt via an example.}
 As a concrete example, consider designing a model for controlling the steering of a self-driving car.
 If, during simulation or testing, the models predicts that the car should turn into a sidewalk, the developer needs to quickly identify possible reasons for the misprediction.
 Due to its strong dependence on the training data, there are three natural questions that arise:
@@ -30,18 +41,15 @@ Answering these questions can help the developer focus on cleaning the training 
     \label{fig:my_label}
 \end{figure}
 
-Existing work proposes techniques to enhance model interpretability as one possible solution.
-Interpretability can be achieved in two ways: (1) use a simpler, more interpretable model (e.g., a decision tree) from the start, or (2) explain the behavior of a complex model using a simplified approximation~\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}. Neither approach is perfect. 
-Using a simpler model sacrifices prediction accuracy, which is a trade-off that many model applications are not willing to make.
-An example of the second approach is to train a sparse linear model in the local neighborhood of a mispredicted point as a proxy to explain the characteristics (features) that caused the misprediction\cite{taylor2016alignment, lei2016rationalizing, ribeiro2016should}.
-Although these approximations can identify salient features, they do not help identify the {\it training data} that led the model towards the misprediction, which might be more useful to a model developer.
-This could potentially hide data representation inconsistencies between the training and test data.
-Identifying this training data is increasingly important when debugging deep neural network models due to their heavy reliance on large training datasets, which may not always be highly curated and consistent.
 
-We argue that the missing piece is analogous to data provenance in traditional relational or data flow programs, where given an output tuple, the system describes the set of input tuples that cause it to be in the result.
-In the case of learning, our objective is to select a set of training data examples that most influence a prediction of a new example.
+
+\ewu{From this example, we argue for explaining model mispredictions by identifying and summarizing the subset of training data that most influenced the prediction of a test record.}
+%the missing piece is analogous to data provenance in traditional relational or data flow programs, where given an output tuple, the system describes the set of input tuples that cause it to be in the result.
+%In the case of learning, our objective is to select a set of training data examples that most influence a prediction of a new example.
 By influence, we mean that if the labels or features were perturbed for this subset, it would be more likely to change the prediction.
-However, for most models, every training data point has some impact on new prediction.
+This notion is similar to responsibility in the data lineage and explanation literature~\cite{scorpion,alexandra,reversedatamanagamente,semirings}, in the context of black-box machine learning models as opposed to database queries with well defined semantics.
+
+\ewu{This problem is challenging because every training data point has some impact on new prediction.}
 Thus, we simplify the problem to instead identify a {\it sub-partition} of the training data locally approximates the complex model for test points within this sub-partition.  
 High-dimensional, non-linear models, such as Neural Networks, have complex decision boundaries, which makes a simple nearest neighbor search unreliable.
 Thus, we have to identify a subset of data that aligns with the decision structure of model.
